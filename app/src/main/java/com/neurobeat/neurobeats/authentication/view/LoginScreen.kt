@@ -122,9 +122,9 @@ fun LoginScreen(navController: NavController) {
                     trailingIcon = {
                         Icon(
                             if (showPassword) {
-                                Icons.Filled.Visibility
-                            } else {
                                 Icons.Filled.VisibilityOff
+                            } else {
+                                Icons.Filled.Visibility
                             },
                             contentDescription = "Visibility_Icon",
                             modifier = Modifier.clickable { showPassword = !showPassword },
@@ -151,9 +151,9 @@ fun LoginScreen(navController: NavController) {
                     }
                 }
 
-                Spacer(modifier = Modifier.height(10.dp))
+                Spacer(modifier = Modifier.height( if (!newUser) 10.dp else 60.dp))
                 Button(
-                    onClick = { newUser = !newUser }, // use Authentication.signIN() here
+                    onClick = {  }, // use Authentication.signIN() here
                     colors = ButtonDefaults.buttonColors(txtColor),
                     modifier = Modifier
                         .width(120.dp)
@@ -184,7 +184,7 @@ fun LoginScreen(navController: NavController) {
                 Text(
                     text = if (!newUser) "Sign Up" else "Login",
                     color = Color(230, 124, 255, 255),
-                    modifier = Modifier.clickable {},
+                    modifier = Modifier.clickable { newUser = !newUser },
                     fontSize = 16.sp
                 )
             }
