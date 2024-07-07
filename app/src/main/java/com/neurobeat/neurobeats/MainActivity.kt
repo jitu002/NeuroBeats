@@ -10,6 +10,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.neurobeat.neurobeats.authentication.view.LoginScreen
 import com.neurobeat.neurobeats.ui.theme.NeuroBeatsTheme
+import com.neurobeat.neurobeats.authentication.view.SignupScreen
+import com.neurobeat.neurobeats.Pages.HomePage
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -29,5 +31,7 @@ fun AppNavigation() {
 
     NavHost(navController = navController, startDestination = "LoginScreen") {
         composable("LoginScreen") { LoginScreen(navController)}
+        composable("SignupScreen") { SignupScreen(navController)}
+        composable("Homepage") { HomePage(navController) }
     }
 }

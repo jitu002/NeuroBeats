@@ -44,16 +44,16 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.neurobeat.neurobeats.authentication.viewmodel.AuthenticationState
+
 import com.neurobeat.neurobeats.authentication.viewmodel.AuthenticationViewModel
 import com.neurobeat.neurobeats.ui.theme.gColor
 import com.neurobeat.neurobeats.ui.theme.txtColor
 
 @Composable
-fun LoginScreen(navController: NavController) {
+fun SignupScreen(navController: NavController) {
 
     val authenticationViewModel: AuthenticationViewModel= viewModel()
     val authState=authenticationViewModel.authState.observeAsState()
-
     val context = LocalContext.current
 
     LaunchedEffect(authState.value) {
@@ -67,6 +67,7 @@ fun LoginScreen(navController: NavController) {
             else -> Unit
         }
     }
+
 
     var email by remember {
         mutableStateOf("")
@@ -99,97 +100,99 @@ fun LoginScreen(navController: NavController) {
             Column (
                 modifier = Modifier.fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    text = "NeuroBeats",
-                    color = txtColor,
-                    modifier = Modifier.padding(top = 20.dp),
-                    fontSize = 35.sp
-                )
-                Spacer(modifier = Modifier.height(25.dp))
-                Text(
-                    text = "Login",
-                    color = txtColor,
-                    modifier = Modifier.padding(20.dp),
-                    fontSize = 32.sp,
-                    textAlign = TextAlign.Start
-                )
-
-                OutlinedTextField(
-                    value = email,
-                    onValueChange = { email = it },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 15.dp),
-                    label = { Text("Email ID ", color = txtColor) },
-                    maxLines = 1,
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedTextColor = txtColor,
-                        focusedBorderColor = Color.White,
-                        unfocusedBorderColor = Color.White,
-                        unfocusedTextColor = txtColor
-                    )
-                )
-                Spacer(modifier = Modifier.height(15.dp))
-
-                OutlinedTextField(
-                    value = password,
-                    onValueChange = { password = it },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 15.dp),
-                    label = { Text(text = "Password", color = txtColor) },
-                    maxLines = 1,
-                    visualTransformation = if (showPassword) {
-                        VisualTransformation.None
-                    } else {
-                        passwordVisualTransformation
-                    },
-                    trailingIcon = {
-                        Icon(
-                            if (showPassword) {
-                                Icons.Filled.VisibilityOff
-                            } else {
-                                Icons.Filled.Visibility
-                            },
-                            contentDescription = "Visibility_Icon",
-                            modifier = Modifier.clickable { showPassword = !showPassword },
-                            tint = txtColor
-                        )
-                    },
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedTextColor = txtColor,
-                        focusedBorderColor = Color.White,
-                        unfocusedBorderColor = Color.White,
-                        unfocusedTextColor = txtColor
-                    )
-                )
-
-                Spacer(modifier = Modifier.height( 60.dp))
-                Button(
-                    onClick = {
-                        authenticationViewModel.login(email,password)
-                    }, // use Authentication.signIN() here
-                    colors = ButtonDefaults.buttonColors(txtColor),
-                    modifier = Modifier
-                        .width(120.dp)
-                        .height(55.dp)
                 ) {
                     Text(
-                        text = "Login",
-                        fontSize = 18.sp,
-                        color = Color(4, 2, 29, 255)
+                        text = "NeuroBeats",
+                        color = txtColor,
+                        modifier = Modifier.padding(top = 20.dp),
+                        fontSize = 35.sp
                     )
+                    Spacer(modifier = Modifier.height(25.dp))
+                    Text(
+                        text = "Sign Up",
+                        color = txtColor,
+                        modifier = Modifier.padding(20.dp),
+                        fontSize = 32.sp,
+                        textAlign = TextAlign.Start
+                    )
+
+                    OutlinedTextField(
+                        value = email,
+                        onValueChange = { email = it },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 15.dp),
+                        label = { Text("Email ID ", color = txtColor) },
+                        maxLines = 1,
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedTextColor = txtColor,
+                            focusedBorderColor = Color.White,
+                            unfocusedBorderColor = Color.White,
+                            unfocusedTextColor = txtColor
+                        )
+                    )
+                    Spacer(modifier = Modifier.height(15.dp))
+
+                    OutlinedTextField(
+                        value = password,
+                        onValueChange = { password = it },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 15.dp),
+                        label = { Text(text = "Password", color = txtColor) },
+                        maxLines = 1,
+                        visualTransformation = if (showPassword) {
+                            VisualTransformation.None
+                        } else {
+                            passwordVisualTransformation
+                        },
+                        trailingIcon = {
+                            Icon(
+                                if (showPassword) {
+                                    Icons.Filled.VisibilityOff
+                                } else {
+                                    Icons.Filled.Visibility
+                                },
+                                contentDescription = "Visibility_Icon",
+                                modifier = Modifier.clickable { showPassword = !showPassword },
+                                tint = txtColor
+                            )
+                        },
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedTextColor = txtColor,
+                            focusedBorderColor = Color.White,
+                            unfocusedBorderColor = Color.White,
+                            unfocusedTextColor = txtColor
+                        )
+                    )
+
+                    Spacer(modifier = Modifier.height( 60.dp))
+                    Button(
+                        onClick = {
+                            authenticationViewModel.signUp(email,password)
+                        },
+                        colors = ButtonDefaults.buttonColors(txtColor),
+                        modifier = Modifier
+                            .width(130.dp)
+                            .height(70.dp)
+
+                    ) {
+                        Text(
+                            text = "Create Account",
+                            fontSize = 18.sp,
+                            textAlign = TextAlign.Center,
+                            color = Color(4, 2, 29, 255)
+                        )
+                    }
                 }
-            }
         }
 
         Spacer(modifier = Modifier.height(20.dp))
 
         TextButton(onClick = {
-            navController.navigate("SignupScreen")
+            navController.navigate("LoginScreen")
         }) {
-            Text(text = "Don't have an account?, Signup")
+            Text(text = "Login")
         }
     }
 }
