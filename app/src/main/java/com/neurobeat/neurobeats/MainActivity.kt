@@ -11,7 +11,7 @@ import androidx.navigation.compose.rememberNavController
 import com.neurobeat.neurobeats.authentication.view.LoginScreen
 import com.neurobeat.neurobeats.ui.theme.NeuroBeatsTheme
 import com.neurobeat.neurobeats.authentication.view.SignupScreen
-import com.neurobeat.neurobeats.Pages.HomePage
+import com.neurobeat.neurobeats.pages.HomePage
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

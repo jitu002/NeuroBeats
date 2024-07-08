@@ -1,25 +1,30 @@
 package com.neurobeat.neurobeats.authentication.view
 
 import android.widget.Toast
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ChevronLeft
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
-import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.OutlinedCard
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
@@ -33,7 +38,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -44,9 +48,8 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.neurobeat.neurobeats.authentication.viewmodel.AuthenticationState
-
 import com.neurobeat.neurobeats.authentication.viewmodel.AuthenticationViewModel
-import com.neurobeat.neurobeats.ui.theme.gColor
+import com.neurobeat.neurobeats.ui.theme.BackgroundColor
 import com.neurobeat.neurobeats.ui.theme.txtColor
 
 @Composable
@@ -85,44 +88,71 @@ fun SignupScreen(navController: NavController) {
     Column (
         modifier = Modifier
             .fillMaxSize()
-            .background(Brush.linearGradient(gColor)),
+            .background(BackgroundColor),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        OutlinedCard(
+        Card(
             modifier = Modifier
                 .height(500.dp)
                 .padding(25.dp)
                 .fillMaxWidth(),
             colors = CardDefaults.outlinedCardColors(Color.Transparent),
-            border = BorderStroke(2.dp,color = Color.White)
+            elevation = CardDefaults.cardElevation(0.dp)
         ) {
             Column (
                 modifier = Modifier.fillMaxSize(),
-                horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text(
-                        text = "NeuroBeats",
-                        color = txtColor,
-                        modifier = Modifier.padding(top = 20.dp),
-                        fontSize = 35.sp
-                    )
-                    Spacer(modifier = Modifier.height(25.dp))
+                    Column{
+                        Text(
+                            text = "Set your",
+                            style = MaterialTheme.typography.titleLarge,
+                            textAlign = TextAlign.Center,
+                            color = txtColor,
+                            fontSize = 35.sp
+                        )
+                        Text(
+                            text = "NEURONS",
+                            style = MaterialTheme.typography.titleLarge,
+                            textAlign = TextAlign.Center,
+                            color = txtColor,
+                            fontSize = 50.sp
+                        )
+                        Text(
+                            text = "On fire",
+                            style = MaterialTheme.typography.titleLarge,
+                            textAlign = TextAlign.Center,
+                            color = txtColor,
+                            fontSize = 35.sp
+                        )
+
+                    }
+                Spacer(modifier = Modifier.height(30.dp))
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
                     Text(
                         text = "Sign Up",
                         color = txtColor,
-                        modifier = Modifier.padding(20.dp),
+                        style = MaterialTheme.typography.bodyLarge,
                         fontSize = 32.sp,
-                        textAlign = TextAlign.Start
+                        textAlign = TextAlign.Center
                     )
 
                     OutlinedTextField(
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Email,
+                                contentDescription = "Email icon",
+                                tint = txtColor
+                            )
+                        },
                         value = email,
                         onValueChange = { email = it },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 15.dp),
-                        label = { Text("Email ID ", color = txtColor) },
+                            .padding(horizontal = 13.dp),
+                        label = { Text("Email ID ", color = txtColor,fontSize = 14.sp) },
                         maxLines = 1,
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedTextColor = txtColor,
@@ -131,15 +161,17 @@ fun SignupScreen(navController: NavController) {
                             unfocusedTextColor = txtColor
                         )
                     )
-                    Spacer(modifier = Modifier.height(15.dp))
 
                     OutlinedTextField(
+                        leadingIcon = {
+                            Icon(imageVector = Icons.Default.Lock, contentDescription ="password icon", tint = txtColor)
+                        },
                         value = password,
                         onValueChange = { password = it },
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 15.dp),
-                        label = { Text(text = "Password", color = txtColor) },
+                        label = { Text(text = "Password", color = txtColor, fontSize = 14.sp) },
                         maxLines = 1,
                         visualTransformation = if (showPassword) {
                             VisualTransformation.None
@@ -165,34 +197,41 @@ fun SignupScreen(navController: NavController) {
                             unfocusedTextColor = txtColor
                         )
                     )
-
-                    Spacer(modifier = Modifier.height( 60.dp))
-                    Button(
-                        onClick = {
-                            authenticationViewModel.signUp(email,password)
-                        },
-                        colors = ButtonDefaults.buttonColors(txtColor),
-                        modifier = Modifier
-                            .width(130.dp)
-                            .height(70.dp)
-
-                    ) {
-                        Text(
-                            text = "Create Account",
-                            fontSize = 18.sp,
-                            textAlign = TextAlign.Center,
-                            color = Color(4, 2, 29, 255)
-                        )
-                    }
                 }
-        }
 
+
+            }
+        }
+        FilledTonalButton(
+            onClick = {
+                authenticationViewModel.signUp(email,password)
+            },
+            colors = ButtonDefaults.buttonColors(txtColor),
+            modifier = Modifier
+                .width(330.dp)
+                .height(70.dp)
+
+        ) {
+            Text(
+                text = "Create Account",
+                style = MaterialTheme.typography.bodyLarge,
+                fontSize = 16.sp,
+                textAlign = TextAlign.Center,
+                color = Color(4, 2, 29, 255)
+            )
+        }
         Spacer(modifier = Modifier.height(20.dp))
 
         TextButton(onClick = {
             navController.navigate("LoginScreen")
         }) {
-            Text(text = "Login")
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(7.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(imageVector = Icons.Default.ChevronLeft, contentDescription = "Right Arrow", modifier = Modifier.size(50.dp,50.dp))
+                Text(text = "Login")
+                }
         }
     }
 }
