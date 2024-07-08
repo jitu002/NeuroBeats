@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "205797518004",
+    "project_id": "neurobeats-99655",
+    "storage_bucket": "neurobeats-99655.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:205797518004:android:b4d2bc2fdfd7934e9b85e1",
+        "android_client_info": {
+          "package_name": "com.neurobeat.neurobeats"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAVg5U_sq3lYoJjpIQrQo2LUFE1kFaj8uo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
