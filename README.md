@@ -4,7 +4,7 @@ using android studio and necessary components.
 
 Sprint 1:
 Designing a functional login,signup and signin pages with firebase authentication </br>
-Status: Completed__
+Status: Completed
 
 ![screen1](https://github.com/jitu002/NeuroBeats/assets/104663159/744cd5fa-79a1-4c05-94fc-afce0d2af06a)
 
@@ -16,5 +16,5 @@ Status: Completed__
 
 
 Sprint 2:
-Designing individual pages (music player page,accounts page etc) and connecting them to the main system
+Designing individual pages (music player page,accounts page etc) and connecting them to the main system </br>
 Status: Planning and execution
