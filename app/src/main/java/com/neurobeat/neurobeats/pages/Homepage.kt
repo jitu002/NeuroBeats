@@ -73,6 +73,9 @@ fun HomePage(navController: NavController) {
             Button(onClick = { navController.navigate("ArtistLibrary") }) {
                 Text(text = "ArtistLibrary")
             }
+            Button(onClick = { navController.navigate("MusicPlayer") }) {
+                Text(text = "MusicPlayer")
+            }
         }
         TextButton(onClick = {
             authenticationViewModel.signOut()
