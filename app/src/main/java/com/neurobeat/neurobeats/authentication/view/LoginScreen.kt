@@ -163,9 +163,9 @@ fun LoginScreen(navController: NavController) {
                         label = { Text(text = "Password", color = txtColor, fontSize = 14.sp) },
                         maxLines = 1,
                         visualTransformation = if (showPassword) {
-                            passwordVisualTransformation
-                        } else {
                             VisualTransformation.None
+                        } else {
+                            passwordVisualTransformation
                         },
                         trailingIcon = {
                             Icon(

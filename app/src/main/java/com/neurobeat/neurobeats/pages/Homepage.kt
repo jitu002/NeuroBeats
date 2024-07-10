@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -69,6 +70,9 @@ fun HomePage(navController: NavController) {
                 fontSize = 35.sp
             )
 
+            Button(onClick = { navController.navigate("ArtistLibrary") }) {
+                Text(text = "ArtistLibrary")
+            }
         }
         TextButton(onClick = {
             authenticationViewModel.signOut()
