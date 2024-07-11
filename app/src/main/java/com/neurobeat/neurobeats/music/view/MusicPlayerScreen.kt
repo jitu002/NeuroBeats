@@ -1,4 +1,4 @@
-package com.neurobeat.neurobeats.pages
+package com.neurobeat.neurobeats.music.view
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -46,7 +46,7 @@ import com.neurobeat.neurobeats.ui.theme.BackgroundColor
 import com.neurobeat.neurobeats.ui.theme.txtColor
 
 @Composable
-fun MusicPlayer(navController: NavController) {
+fun MusicPlayerScreen(navController: NavController) {
     var isPlaying by remember {
         mutableStateOf(false)
     }

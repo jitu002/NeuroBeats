@@ -1,4 +1,4 @@
-package com.neurobeat.neurobeats.pages
+package com.neurobeat.neurobeats.artist.view
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -37,7 +37,7 @@ import com.neurobeat.neurobeats.ui.theme.txtBgColor
 import com.neurobeat.neurobeats.ui.theme.txtColor
 
 @Composable
-fun ArtistLibrary(navController: NavHostController) {
+fun ArtistLibraryScreen(navController: NavHostController) {
     Column (modifier = Modifier
         .fillMaxSize()
         .background(BackgroundColor),
