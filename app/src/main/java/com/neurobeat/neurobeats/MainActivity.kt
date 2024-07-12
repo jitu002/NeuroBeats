@@ -1,5 +1,7 @@
 package com.neurobeat.neurobeats
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -21,6 +23,20 @@ class MainActivity : ComponentActivity() {
             NeuroBeatsTheme {
                 AppNavigation()
             }
+        }
+    }
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        intent?.data?.let { uri ->
+            handleRedirectUri(uri)
+        }
+    }
+
+    private fun handleRedirectUri(uri: Uri) {
+        // Extract the authorization code or token from the URI
+        val code = uri.getQueryParameter("code")
+        if (code != null) {
+            // Use the authorization code to get the access token
         }
     }
 }
