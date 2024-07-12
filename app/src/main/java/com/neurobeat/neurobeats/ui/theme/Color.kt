@@ -31,3 +31,4 @@ val BackgroundColor = Brush.linearGradient(
     end = Offset.Infinite // Bottom-right corner
 )
 val txtColor = Color.White
+val txtBgColor = listOf(Color.Transparent, Color.Black)
