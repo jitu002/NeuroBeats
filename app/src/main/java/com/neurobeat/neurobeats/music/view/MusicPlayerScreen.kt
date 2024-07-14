@@ -1,6 +1,8 @@
 package com.neurobeat.neurobeats.music.view
 
+import android.annotation.SuppressLint
 import android.net.Uri
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -20,25 +22,50 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.media3.common.MediaItem
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.navigation.NavController
-import com.neurobeat.neurobeats.R
+import coil.compose.rememberAsyncImagePainter
 import com.neurobeat.neurobeats.ui.theme.BackgroundColor
 import com.neurobeat.neurobeats.ui.theme.txtColor
 import kotlinx.coroutines.delay
+import java.net.URLDecoder
+import java.nio.charset.StandardCharsets
 
 @Composable
-fun MusicPlayerScreen(navController: NavController, previewUrl: String?) {
+fun MusicPlayerScreen(
+    navController: NavController,
+    trackName: String,
+    albumName: String,
+    albumImage: String,
+    artists: String,
+    preview_url: String?,
+    duration_ms: String
+) {
+    val decodedTrackName = URLDecoder.decode(trackName, StandardCharsets.UTF_8.toString())
+    val decodedAlbumName = URLDecoder.decode(albumName, StandardCharsets.UTF_8.toString())
+    val decodedAlbumImage = URLDecoder.decode(albumImage, StandardCharsets.UTF_8.toString())
+    val decodedArtists = URLDecoder.decode(artists, StandardCharsets.UTF_8.toString())
+    val decodedPreviewUrl = URLDecoder.decode(preview_url, StandardCharsets.UTF_8.toString())
+//    val decodedDuration = URLDecoder.decode(duration_ms, StandardCharsets.UTF_8.toString()).toFloat()
+
+    // preview_url has max 29 sec
+    val decodedDuration = 29000f
+
+//    Log.d("MusicPlayerScreen", "Artists: $decodedArtists")
+//    Log.d("MusicPlayerScreen", "TrackName: $decodedTrackName")
+//    Log.d("MusicPlayerScreen", "AlbumName: $decodedAlbumName")
+//    Log.d("MusicPlayerScreen", "AlbumImage: $decodedAlbumImage")
+//    Log.d("MusicPlayerScreen", "PreviewUrl: $decodedPreviewUrl")
+//    Log.d("MusicPlayerScreen", "Duration: $decodedDuration")
     val context = LocalContext.current
 
     // Remember ExoPlayer instance
     val player = remember {
         ExoPlayer.Builder(context).build().apply {
-            val mediaItem = MediaItem.fromUri(Uri.parse(previewUrl))
+            val mediaItem = MediaItem.fromUri(Uri.parse(decodedPreviewUrl))
             setMediaItem(mediaItem)
             prepare()
         }
@@ -46,7 +73,6 @@ fun MusicPlayerScreen(navController: NavController, previewUrl: String?) {
 
     var isPlaying by remember { mutableStateOf(false) }
     var currentPosition by remember { mutableFloatStateOf(0f) }
-    val totalDuration by remember { mutableFloatStateOf(player.duration.toFloat()) }
 
     // Manage ExoPlayer lifecycle
     DisposableEffect(Unit) {
@@ -80,14 +106,14 @@ fun MusicPlayerScreen(navController: NavController, previewUrl: String?) {
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(text = "Playing from the album", color = txtColor, fontSize = 16.sp)
-                Text(text = "Dangerous Days", color = txtColor, fontSize = 14.sp)
+                Text(text = decodedAlbumName, color = txtColor, fontSize = 14.sp)
             }
             Icon(imageVector = Icons.Default.MoreVert, contentDescription = "More Options", modifier = Modifier.size(35.dp), tint = txtColor)
         }
         Spacer(modifier = Modifier.height(30.dp))
         Image(
-            painter = painterResource(R.drawable.prison_perturbator),
-            contentDescription = "Song Image",
+            painter = rememberAsyncImagePainter(model = decodedAlbumImage),
+            contentDescription = "Track image",
             contentScale = ContentScale.Crop,
             modifier = Modifier
                 .size(320.dp)
@@ -97,8 +123,8 @@ fun MusicPlayerScreen(navController: NavController, previewUrl: String?) {
         Column(
             modifier = Modifier.padding(horizontal = 30.dp)
         ) {
-            Text(text = "BODY/PRISON", color = txtColor, modifier = Modifier.fillMaxWidth())
-            Text(text = "Pertrubator", color = txtColor, fontSize = 16.sp)
+            Text(text = decodedTrackName, color = txtColor, modifier = Modifier.fillMaxWidth())
+            Text(text = decodedArtists, color = txtColor, fontSize = 16.sp)
             Spacer(modifier = Modifier.height(16.dp))
 
             TrackSlider(
@@ -107,7 +133,7 @@ fun MusicPlayerScreen(navController: NavController, previewUrl: String?) {
                     player.seekTo(it.toLong())
                     currentPosition = it
                 },
-                songDuration = totalDuration
+                songDuration = decodedDuration
             )
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -120,7 +146,7 @@ fun MusicPlayerScreen(navController: NavController, previewUrl: String?) {
                     modifier = Modifier.padding(horizontal = 5.dp)
                 )
                 Text(
-                    text = formatTime(totalDuration),
+                    text = formatTime(decodedDuration),
                     color = txtColor,
                     fontSize = 16.sp,
                     modifier = Modifier.padding(horizontal = 5.dp)
@@ -212,6 +238,7 @@ fun TrackSlider(
     )
 }
 
+@SuppressLint("DefaultLocale")
 fun formatTime(timeMs: Float): String {
     val totalSeconds = (timeMs / 1000).toInt()
     val minutes = totalSeconds / 60

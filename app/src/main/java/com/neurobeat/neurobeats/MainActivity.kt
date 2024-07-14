@@ -56,10 +56,15 @@ fun AppNavigation(viewModel: PlaylistViewModel) {
         composable("SignupScreen") { SignupScreen(navController)}
         composable("Homepage") { HomePage(navController) }
         composable("ArtistLibrary") { ArtistLibraryScreen(navController) }
-        composable("musicPlayer/{previewUrl}") { backStackEntry ->
+        composable("MusicPlayer/{preview_url}/{trackName}/{albumName}/{albumImage}/{artists}/{duration_ms}") { backStackEntry ->
             MusicPlayerScreen(
                 navController = navController,
-                previewUrl = backStackEntry.arguments?.getString("previewUrl") ?: ""
+                preview_url = backStackEntry.arguments?.getString("preview_url") ?: "",
+                trackName = backStackEntry.arguments?.getString("trackName") ?: "",
+                albumName = backStackEntry.arguments?.getString("albumName") ?: "",
+                albumImage = backStackEntry.arguments?.getString("albumImage") ?: "",
+                artists = backStackEntry.arguments?.getString("artists") ?: "",
+                duration_ms = backStackEntry.arguments?.getString("duration_ms") ?: ""
             )
         }
         composable("TracksScreen/{playlistId}/{token}") { backStackEntry ->

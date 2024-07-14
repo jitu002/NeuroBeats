@@ -21,6 +21,8 @@ import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter
 import com.neurobeat.neurobeats.api.models.Track
 import com.neurobeat.neurobeats.music.viewmodels.PlaylistViewModel
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 
 @Composable
 fun TracksScreen(
@@ -38,8 +40,19 @@ fun TracksScreen(
     LazyColumn {
         items(tracks) { trackItem ->
             TrackItemView(track = trackItem.track) {
-                navController.navigate("MusicPlayer/${trackItem.track}")
-                Log.d("TracksScreen", "Track clicked: ${trackItem.track.name}")
+                val previewUrl = trackItem.track.preview_url ?: return@TrackItemView
+                val encodedPreviewUrl = URLEncoder.encode(previewUrl, StandardCharsets.UTF_8.toString())
+                val encodedTrackName = URLEncoder.encode(trackItem.track.name, StandardCharsets.UTF_8.toString())
+                val encodedAlbumName = URLEncoder.encode(trackItem.track.album.name, StandardCharsets.UTF_8.toString())
+                val albumImageUrl = trackItem.track.album.images.first().url
+                val encodedAlbumImageUrl = URLEncoder.encode(albumImageUrl, StandardCharsets.UTF_8.toString())
+                val artists = trackItem.track.artists.joinToString(", ") { it.name }
+                val encodedArtists = URLEncoder.encode(artists, StandardCharsets.UTF_8.toString())
+                val duration = trackItem.track.duration_ms.toString()
+                val encodedDuration = URLEncoder.encode(duration, StandardCharsets.UTF_8.toString())
+
+                navController.navigate("MusicPlayer/$encodedPreviewUrl/$encodedTrackName/$encodedAlbumName/$encodedAlbumImageUrl/$encodedArtists/$encodedDuration")
+                Log.d("TrackItem", trackItem.track.album.images.first().url)
             }
         }
     }
