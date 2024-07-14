@@ -30,5 +30,8 @@ val BackgroundColor = Brush.linearGradient(
     start = Offset(0f, 0f), // Top-left corner
     end = Offset.Infinite // Bottom-right corner
 )
+
+val BarColor=Color(0xFF1e0a35)
+
 val txtColor = Color.White
 val txtBgColor = listOf(Color.Transparent, Color.Black)

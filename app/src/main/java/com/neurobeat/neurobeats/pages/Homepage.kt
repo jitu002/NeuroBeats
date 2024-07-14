@@ -1,41 +1,71 @@
 package com.neurobeat.neurobeats.pages
 
+import android.util.Log
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.checkScrollableContainerConstraints
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material3.Button
 import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.TopAppBarScrollBehavior
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import coil.compose.rememberAsyncImagePainter
+import com.neurobeat.neurobeats.authentication.SpotifyAuth
 import com.neurobeat.neurobeats.authentication.viewmodel.AuthenticationState
 import com.neurobeat.neurobeats.authentication.viewmodel.AuthenticationViewModel
 import com.neurobeat.neurobeats.ui.theme.BackgroundColor
+import com.neurobeat.neurobeats.ui.theme.BarColor
 import com.neurobeat.neurobeats.ui.theme.txtColor
+import kotlinx.coroutines.launch
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.http.GET
+import retrofit2.http.Header
+import retrofit2.http.Path
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -44,6 +74,12 @@ fun HomePage(navController: NavController) {
     val authenticationViewModel: AuthenticationViewModel= viewModel()
     val authState=authenticationViewModel.authState.observeAsState()
     val scrollBehavior= TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState())
+    var accessToken by remember { mutableStateOf<String?>(null) }
+    var categoryPlaylistsMap by remember { mutableStateOf<Map<Category, List<Playlist>>?>(null) }
+    val coroutineScope = rememberCoroutineScope()
+
+    val DrawerState = rememberDrawerState(DrawerValue.Closed)
+    val scope = rememberCoroutineScope()
 
 
     LaunchedEffect(authState.value) {
@@ -52,81 +88,223 @@ fun HomePage(navController: NavController) {
             else -> Unit
         }
     }
-    Scaffold(
-        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
 
-        topBar = {
-            CenterAlignedTopAppBar(
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = MaterialTheme.colorScheme.primary,
-                ),
-                title = {
-                    Text(
-                        "Centered Top App Bar",
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                },
-                actions = {
-                    IconButton(onClick = { /* do something */ }) {
-                        Icon(
-                            imageVector = Icons.Filled.Menu,
-                            contentDescription = "Localized description"
+    ModalNavigationDrawer(
+
+        drawerState = DrawerState,
+        drawerContent = {
+
+            Column(
+                modifier=Modifier
+                    .background(BackgroundColor)
+                    .fillMaxHeight(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                TextButton(onClick = {
+                    authenticationViewModel.signOut()
+                }) {
+                    Text(text = "Sign out")
+                }
+            }
+
+        }
+    ) {
+        Scaffold(
+            modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+
+            topBar = {
+                CenterAlignedTopAppBar(
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = BarColor,
+                        titleContentColor = txtColor,
+                    ),
+                    title = {
+                        Text(
+                            "Welcome Boss",
+                            maxLines = 1,
+                            fontSize =27.sp,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    },
+                    navigationIcon = {
+                            IconButton(
+                                onClick = {
+                                    scope.launch {
+                                        DrawerState.open()
+                                    }
+                                }) {
+                                Icon(
+                                    imageVector = Icons.Filled.Menu,
+                                    contentDescription = "Menu Icon"
+                                )
+                            }
+                    },
+
+                    scrollBehavior = scrollBehavior,
+                )
+            },
+        ) { innerPadding ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .background(BackgroundColor),
+                verticalArrangement = Arrangement.Top,
+
+                ) {
+                LaunchedEffect(Unit) {
+                    SpotifyAuth.getAccessToken { token ->
+                        accessToken = token
+                        token?.let {
+                            coroutineScope.launch {
+                                try {
+                                    val categoryResponse = RetrofitInstance.api.getCategories("Bearer $it")
+                                    val categories = categoryResponse.categories.items
+                                    val categoryPlaylists = categories.associateWith { category ->
+                                        RetrofitInstance.api.getPlaylists("Bearer $it", category.id).playlists.items
+                                    }
+                                    categoryPlaylistsMap = categoryPlaylists
+                                    Log.d("categoryPlaylistsMap", "$categoryPlaylistsMap")
+                                } catch (e: Exception) {
+                                    Log.e("NeuroBeats error", "Error fetching data", e)
+                                }
+                            }
+                        }
+                    }
+                }
+
+                categoryPlaylistsMap?.let {
+                    CategoryPlaylistsList(it)
+                } ?: run {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center,
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        Text("Hang On!!!")
+                        CircularProgressIndicator(
+                            modifier = Modifier.width(64.dp),
+                            color = Color.White,
+                            trackColor = MaterialTheme.colorScheme.surfaceVariant,
                         )
                     }
-                },
-                scrollBehavior = scrollBehavior,
-            )
-        },
-    ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .background(BackgroundColor),
-            verticalArrangement = Arrangement.Center,
-
-            ) {
-            Text(text = "Home Page", fontSize = 32.sp, color = txtColor)
-            Column(
-
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    text = "Hold Your",
-                    style = MaterialTheme.typography.titleLarge,
-                    textAlign = TextAlign.Center,
-                    color = txtColor,
-                    fontSize = 35.sp
-                )
-                Text(
-                    text = "BEATS",
-                    style = MaterialTheme.typography.titleLarge,
-                    textAlign = TextAlign.Center,
-                    color = txtColor,
-                    fontSize = 50.sp
-                )
-                Text(
-                    text = "We are under construction!!!",
-                    style = MaterialTheme.typography.titleLarge,
-                    textAlign = TextAlign.Center,
-                    color = txtColor,
-                    fontSize = 35.sp
-                )
-
-                Button(onClick = { navController.navigate("ArtistLibrary") }) {
-                    Text(text = "ArtistLibrary")
                 }
-                Button(onClick = { navController.navigate("MusicPlayer") }) {
-                    Text(text = "MusicPlayer")
-                }
+
             }
-            TextButton(onClick = {
-                authenticationViewModel.signOut()
-            }) {
-                Text(text = "Sign out")
+
+        }
+
+
+    }
+
+}
+
+
+
+
+@Composable
+fun CategoryPlaylistsList(categoryPlaylistsMap: Map<Category, List<Playlist>>) {
+    LazyColumn{
+        categoryPlaylistsMap.forEach { (category, playlists) ->
+            item {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.Start
+                ){
+                    Text(
+                        text = category.name,
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 26.sp,
+                        modifier = Modifier.padding(16.dp)
+                    )
+                    LazyRow(
+                        contentPadding = PaddingValues(start = 16.dp, end = 16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(24.dp),
+                        modifier= Modifier
+                            .fillMaxSize()
+                            .height(200.dp)
+                    ) {
+                      if(playlists.isNotEmpty()){
+                          items(playlists) { playlist ->
+                              PlaylistItem(playlist)
+                          }
+                      }
+                      else{
+                          item {
+                              Text(text = "Start listening to get recommendations.",
+                                  fontSize = 18.sp,
+                                  maxLines = 3,
+                                  modifier = Modifier.
+                                  width(LocalConfiguration.current.screenWidthDp.dp))
+                          }
+                      }
+                    }
+                }
             }
         }
+    }
+}
+
+@Composable
+fun PlaylistItem(playlist: Playlist) {
+    Column{
+        if (playlist.images.isNotEmpty()){
+            val imageUrl=playlist.images.first().url
+            Image(
+                painter = rememberAsyncImagePainter(model = imageUrl ),
+                contentDescription = "playlist image",
+                modifier = Modifier
+                    .size(150.dp)
+                    .clip(RoundedCornerShape(21.dp)),
+            )
+            Text(
+                text = playlist.name,
+                fontSize = 14.sp,
+                overflow = TextOverflow.Ellipsis, // Use Ellipsis to indicate text overflow
+                maxLines = 2,
+                modifier = Modifier.width(150.dp)
+            )
+        }
+    }
+}
+
+
+
+data class CategoriesResponse(val categories: Categories)
+data class Categories(val items: List<Category>)
+data class Category(val id: String, val name: String)
+
+data class PlaylistResponse(val playlists: Playlists)
+data class Playlists(val items: List<Playlist>)
+data class Playlist(val id: String, val name: String, val images: List<ImageData>)
+data class ImageData(val url: String)
+
+
+
+
+interface SpotifyApi {
+    @GET("browse/categories")
+    suspend fun getCategories(
+        @Header("Authorization") token: String
+    ): CategoriesResponse
+
+    @GET("browse/categories/{category_id}/playlists")
+    suspend fun getPlaylists(
+        @Header("Authorization") token: String,
+        @Path("category_id") categoryId: String
+    ): PlaylistResponse
+}
+
+object RetrofitInstance {
+    private const val BASE_URL = "https://api.spotify.com/v1/"
+
+    val api: SpotifyApi by lazy {
+        Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(SpotifyApi::class.java)
     }
 }

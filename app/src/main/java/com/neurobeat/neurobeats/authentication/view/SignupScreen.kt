@@ -1,5 +1,6 @@
 package com.neurobeat.neurobeats.authentication.view
 
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -14,9 +15,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.ButtonDefaults
@@ -47,6 +50,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.google.firebase.firestore.FirebaseFirestore
 import com.neurobeat.neurobeats.authentication.viewmodel.AuthenticationState
 import com.neurobeat.neurobeats.authentication.viewmodel.AuthenticationViewModel
 import com.neurobeat.neurobeats.ui.theme.BackgroundColor
@@ -54,6 +58,8 @@ import com.neurobeat.neurobeats.ui.theme.txtColor
 
 @Composable
 fun SignupScreen(navController: NavController) {
+
+
 
     val authenticationViewModel: AuthenticationViewModel= viewModel()
     val authState=authenticationViewModel.authState.observeAsState()
@@ -72,6 +78,12 @@ fun SignupScreen(navController: NavController) {
     }
 
 
+    var name by remember {
+        mutableStateOf("")
+    }
+    var age by remember {
+        mutableStateOf("")
+    }
     var email by remember {
         mutableStateOf("")
     }
@@ -83,18 +95,44 @@ fun SignupScreen(navController: NavController) {
     }
     val passwordVisualTransformation = remember { PasswordVisualTransformation() }
 
+    data class User(val usrName:String,val usrAge:Int)
+
+
+    fun addDataToFirestore(user:User){
+        val db=FirebaseFirestore.getInstance()
+        val userMap = hashMapOf(
+            "name" to user.usrName,
+            "age" to user.usrAge
+        )
+
+        // Add user data to the specific document within the userDetail collection
+        db.collection("userDetails").document("user")
+            .set(userMap)
+            .addOnSuccessListener {
+                Log.d("Firebase","Successfully added document")
+            }
+            .addOnFailureListener { e ->
+                // Handle failure
+                Log.d("Firebase error","$e")
+            }
+
+    }
+
+
+
+
 
 
     Column (
         modifier = Modifier
             .fillMaxSize()
             .background(BackgroundColor),
-        verticalArrangement = Arrangement.Center,
+        verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Card(
             modifier = Modifier
-                .height(500.dp)
+                .height(660.dp)
                 .padding(25.dp)
                 .fillMaxWidth(),
             colors = CardDefaults.outlinedCardColors(Color.Transparent),
@@ -129,7 +167,8 @@ fun SignupScreen(navController: NavController) {
                     }
                 Spacer(modifier = Modifier.height(30.dp))
                 Column(
-                    horizontalAlignment = Alignment.CenterHorizontally
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
                 ) {
                     Text(
                         text = "Sign Up",
@@ -137,6 +176,50 @@ fun SignupScreen(navController: NavController) {
                         style = MaterialTheme.typography.bodyLarge,
                         fontSize = 32.sp,
                         textAlign = TextAlign.Center
+                    )
+                    OutlinedTextField(
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Person,
+                                contentDescription = "name icon",
+                                tint = txtColor
+                            )
+                        },
+                        value = name,
+                        onValueChange = { name = it },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 13.dp),
+                        label = { Text("Name", color = txtColor,fontSize = 14.sp) },
+                        maxLines = 1,
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedTextColor = txtColor,
+                            focusedBorderColor = Color.White,
+                            unfocusedBorderColor = Color.White,
+                            unfocusedTextColor = txtColor
+                        )
+                    )
+                    OutlinedTextField(
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.CalendarToday,
+                                contentDescription = "Age icon",
+                                tint = txtColor
+                            )
+                        },
+                        value = age,
+                        onValueChange = { age = it },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 13.dp),
+                        label = { Text("Age", color = txtColor,fontSize = 14.sp) },
+                        maxLines = 1,
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedTextColor = txtColor,
+                            focusedBorderColor = Color.White,
+                            unfocusedBorderColor = Color.White,
+                            unfocusedTextColor = txtColor
+                        )
                     )
 
                     OutlinedTextField(
@@ -204,6 +287,7 @@ fun SignupScreen(navController: NavController) {
         }
         FilledTonalButton(
             onClick = {
+                addDataToFirestore(User(name,age.toInt()))
                 authenticationViewModel.signUp(email,password)
             },
             colors = ButtonDefaults.buttonColors(txtColor),
@@ -220,7 +304,7 @@ fun SignupScreen(navController: NavController) {
                 color = Color(4, 2, 29, 255)
             )
         }
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(5.dp))
 
         TextButton(onClick = {
             navController.navigate("LoginScreen")
