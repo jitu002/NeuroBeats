@@ -11,8 +11,8 @@ import org.json.JSONObject
 import java.io.IOException
 
 object SpotifyAuth {
-    private const val CLIENT_ID = ""
-    private const val CLIENT_SECRET = ""
+    private const val CLIENT_ID = "8a5a2184649941798a0262b5f3378a5b"
+    private const val CLIENT_SECRET = "06adaa40202d41ae962f810377186fee"
     private const val TOKEN_URL = "https://accounts.spotify.com/api/token"
 
     fun getAccessToken(callback: (String?) -> Unit) {

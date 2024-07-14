@@ -6,6 +6,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -15,15 +16,18 @@ import com.neurobeat.neurobeats.ui.theme.NeuroBeatsTheme
 import com.neurobeat.neurobeats.authentication.view.SignupScreen
 import com.neurobeat.neurobeats.artist.view.ArtistLibraryScreen
 import com.neurobeat.neurobeats.music.view.MusicPlayerScreen
+import com.neurobeat.neurobeats.music.view.TracksScreen
+import com.neurobeat.neurobeats.music.viewmodels.PlaylistViewModel
 import com.neurobeat.neurobeats.pages.HomePage
 
 class MainActivity : ComponentActivity() {
+    private val viewModel: PlaylistViewModel by viewModels()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
             NeuroBeatsTheme {
-                AppNavigation()
+                AppNavigation(viewModel)
             }
         }
     }
@@ -44,7 +48,7 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun AppNavigation() {
+fun AppNavigation(viewModel: PlaylistViewModel) {
     val navController = rememberNavController()
 
     NavHost(navController = navController, startDestination = "LoginScreen") {
@@ -52,6 +56,19 @@ fun AppNavigation() {
         composable("SignupScreen") { SignupScreen(navController)}
         composable("Homepage") { HomePage(navController) }
         composable("ArtistLibrary") { ArtistLibraryScreen(navController) }
-        composable("MusicPlayer") { MusicPlayerScreen(navController) }
+        composable("musicPlayer/{previewUrl}") { backStackEntry ->
+            MusicPlayerScreen(
+                navController = navController,
+                previewUrl = backStackEntry.arguments?.getString("previewUrl") ?: ""
+            )
+        }
+        composable("TracksScreen/{playlistId}/{token}") { backStackEntry ->
+            TracksScreen(
+                navController = navController,
+                viewModel = viewModel,
+                playlistId = backStackEntry.arguments?.getString("playlistId") ?: "",
+                accessToken = backStackEntry.arguments?.getString("token") ?: ""
+            )
+        }
     }
 }

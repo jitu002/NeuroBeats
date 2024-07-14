@@ -3,6 +3,7 @@ package com.neurobeat.neurobeats.pages
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -54,6 +55,11 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
+import com.neurobeat.neurobeats.api.models.CategoriesResponse
+import com.neurobeat.neurobeats.api.models.Category
+import com.neurobeat.neurobeats.api.models.Playlist
+import com.neurobeat.neurobeats.api.models.PlaylistResponse
+import com.neurobeat.neurobeats.api.models.TracksResponse
 import com.neurobeat.neurobeats.authentication.SpotifyAuth
 import com.neurobeat.neurobeats.authentication.viewmodel.AuthenticationState
 import com.neurobeat.neurobeats.authentication.viewmodel.AuthenticationViewModel
@@ -78,7 +84,7 @@ fun HomePage(navController: NavController) {
     var categoryPlaylistsMap by remember { mutableStateOf<Map<Category, List<Playlist>>?>(null) }
     val coroutineScope = rememberCoroutineScope()
 
-    val DrawerState = rememberDrawerState(DrawerValue.Closed)
+    val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
 
@@ -91,7 +97,7 @@ fun HomePage(navController: NavController) {
 
     ModalNavigationDrawer(
 
-        drawerState = DrawerState,
+        drawerState = drawerState,
         drawerContent = {
 
             Column(
@@ -131,7 +137,7 @@ fun HomePage(navController: NavController) {
                             IconButton(
                                 onClick = {
                                     scope.launch {
-                                        DrawerState.open()
+                                        drawerState.open()
                                     }
                                 }) {
                                 Icon(
@@ -175,7 +181,7 @@ fun HomePage(navController: NavController) {
                 }
 
                 categoryPlaylistsMap?.let {
-                    CategoryPlaylistsList(it)
+                    CategoryPlaylistsList(it, navController, accessToken)
                 } ?: run {
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
@@ -204,7 +210,11 @@ fun HomePage(navController: NavController) {
 
 
 @Composable
-fun CategoryPlaylistsList(categoryPlaylistsMap: Map<Category, List<Playlist>>) {
+fun CategoryPlaylistsList(
+    categoryPlaylistsMap: Map<Category, List<Playlist>>,
+    navController: NavController,
+    accessToken: String?
+) {
     LazyColumn{
         categoryPlaylistsMap.forEach { (category, playlists) ->
             item {
@@ -228,7 +238,7 @@ fun CategoryPlaylistsList(categoryPlaylistsMap: Map<Category, List<Playlist>>) {
                     ) {
                       if(playlists.isNotEmpty()){
                           items(playlists) { playlist ->
-                              PlaylistItem(playlist)
+                              PlaylistItem(playlist, navController, accessToken)
                           }
                       }
                       else{
@@ -248,8 +258,8 @@ fun CategoryPlaylistsList(categoryPlaylistsMap: Map<Category, List<Playlist>>) {
 }
 
 @Composable
-fun PlaylistItem(playlist: Playlist) {
-    Column{
+fun PlaylistItem(playlist: Playlist, navController: NavController, accessToken: String?) {
+    Column ( modifier = Modifier.clickable { navController.navigate("TracksScreen/${playlist.id}/${accessToken}") } ) {
         if (playlist.images.isNotEmpty()){
             val imageUrl=playlist.images.first().url
             Image(
@@ -270,20 +280,6 @@ fun PlaylistItem(playlist: Playlist) {
     }
 }
 
-
-
-data class CategoriesResponse(val categories: Categories)
-data class Categories(val items: List<Category>)
-data class Category(val id: String, val name: String)
-
-data class PlaylistResponse(val playlists: Playlists)
-data class Playlists(val items: List<Playlist>)
-data class Playlist(val id: String, val name: String, val images: List<ImageData>)
-data class ImageData(val url: String)
-
-
-
-
 interface SpotifyApi {
     @GET("browse/categories")
     suspend fun getCategories(
@@ -295,6 +291,12 @@ interface SpotifyApi {
         @Header("Authorization") token: String,
         @Path("category_id") categoryId: String
     ): PlaylistResponse
+
+    @GET("playlists/{playlist_id}/tracks")
+    suspend fun getPlaylistTracks(
+        @Header("Authorization") token: String,
+        @Path("playlist_id") playlistId: String
+    ): TracksResponse
 }
 
 object RetrofitInstance {
