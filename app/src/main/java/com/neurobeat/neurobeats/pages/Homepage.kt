@@ -3,6 +3,7 @@ package com.neurobeat.neurobeats.pages
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -54,27 +55,23 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
-import com.google.firebase.Firebase
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.firestore
+import com.neurobeat.neurobeats.api.models.CategoriesResponse
+import com.neurobeat.neurobeats.api.models.Category
+import com.neurobeat.neurobeats.api.models.Playlist
+import com.neurobeat.neurobeats.api.models.PlaylistResponse
+import com.neurobeat.neurobeats.api.models.TracksResponse
 import com.neurobeat.neurobeats.authentication.SpotifyAuth
-import com.neurobeat.neurobeats.authentication.RetrofitInstance
 import com.neurobeat.neurobeats.authentication.viewmodel.AuthenticationState
 import com.neurobeat.neurobeats.authentication.viewmodel.AuthenticationViewModel
 import com.neurobeat.neurobeats.ui.theme.BackgroundColor
 import com.neurobeat.neurobeats.ui.theme.BarColor
 import com.neurobeat.neurobeats.ui.theme.txtColor
 import kotlinx.coroutines.launch
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.Path
-import com.neurobeat.neurobeats.Category
-import com.neurobeat.neurobeats.CategoriesResponse
-import com.neurobeat.neurobeats.Playlist
-import com.neurobeat.neurobeats.PlaylistResponse
-import com.neurobeat.neurobeats.DatabaseOperation
-import com.neurobeat.neurobeats.User
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -87,28 +84,24 @@ fun HomePage(navController: NavController) {
     var categoryPlaylistsMap by remember { mutableStateOf<Map<Category, List<Playlist>>?>(null) }
     val coroutineScope = rememberCoroutineScope()
 
-    val DrawerState = rememberDrawerState(DrawerValue.Closed)
+    val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
-    val dbOps = remember { DatabaseOperation() }
-    var userData by remember { mutableStateOf<User?>(null) }
 
 
     LaunchedEffect(authState.value) {
         when(authState.value){
             is AuthenticationState.NotAuthenticated -> navController.navigate("LoginScreen")
-            else -> {
-                userData=dbOps.fetchDataFromFirebase(auth = FirebaseAuth.getInstance(), firestore = Firebase.firestore)
-            }
+            else -> Unit
         }
     }
 
     ModalNavigationDrawer(
 
-        drawerState = DrawerState,
+        drawerState = drawerState,
         drawerContent = {
 
             Column(
-                modifier= Modifier
+                modifier=Modifier
                     .background(BackgroundColor)
                     .fillMaxHeight(),
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -134,7 +127,7 @@ fun HomePage(navController: NavController) {
                     ),
                     title = {
                         Text(
-                            "Welcome $",
+                            "Welcome Boss",
                             maxLines = 1,
                             fontSize =27.sp,
                             overflow = TextOverflow.Ellipsis
@@ -144,7 +137,7 @@ fun HomePage(navController: NavController) {
                             IconButton(
                                 onClick = {
                                     scope.launch {
-                                        DrawerState.open()
+                                        drawerState.open()
                                     }
                                 }) {
                                 Icon(
@@ -178,7 +171,7 @@ fun HomePage(navController: NavController) {
                                         RetrofitInstance.api.getPlaylists("Bearer $it", category.id).playlists.items
                                     }
                                     categoryPlaylistsMap = categoryPlaylists
-                                    Log.d("categoryPlaylistsMap", "Data successfully fetched")
+                                    Log.d("categoryPlaylistsMap", "$categoryPlaylistsMap")
                                 } catch (e: Exception) {
                                     Log.e("NeuroBeats error", "Error fetching data", e)
                                 }
@@ -188,7 +181,7 @@ fun HomePage(navController: NavController) {
                 }
 
                 categoryPlaylistsMap?.let {
-                    CategoryPlaylistsList(it)
+                    CategoryPlaylistsList(it, navController, accessToken)
                 } ?: run {
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
@@ -217,7 +210,11 @@ fun HomePage(navController: NavController) {
 
 
 @Composable
-fun CategoryPlaylistsList(categoryPlaylistsMap: Map<Category, List<Playlist>>) {
+fun CategoryPlaylistsList(
+    categoryPlaylistsMap: Map<Category, List<Playlist>>,
+    navController: NavController,
+    accessToken: String?
+) {
     LazyColumn{
         categoryPlaylistsMap.forEach { (category, playlists) ->
             item {
@@ -241,7 +238,7 @@ fun CategoryPlaylistsList(categoryPlaylistsMap: Map<Category, List<Playlist>>) {
                     ) {
                       if(playlists.isNotEmpty()){
                           items(playlists) { playlist ->
-                              PlaylistItem(playlist)
+                              PlaylistItem(playlist, navController, accessToken)
                           }
                       }
                       else{
@@ -261,8 +258,8 @@ fun CategoryPlaylistsList(categoryPlaylistsMap: Map<Category, List<Playlist>>) {
 }
 
 @Composable
-fun PlaylistItem(playlist: Playlist) {
-    Column{
+fun PlaylistItem(playlist: Playlist, navController: NavController, accessToken: String?) {
+    Column ( modifier = Modifier.clickable { navController.navigate("TracksScreen/${playlist.id}/${accessToken}") } ) {
         if (playlist.images.isNotEmpty()){
             val imageUrl=playlist.images.first().url
             Image(
@@ -283,8 +280,6 @@ fun PlaylistItem(playlist: Playlist) {
     }
 }
 
-
-
 interface SpotifyApi {
     @GET("browse/categories")
     suspend fun getCategories(
@@ -296,5 +291,22 @@ interface SpotifyApi {
         @Header("Authorization") token: String,
         @Path("category_id") categoryId: String
     ): PlaylistResponse
+
+    @GET("playlists/{playlist_id}/tracks")
+    suspend fun getPlaylistTracks(
+        @Header("Authorization") token: String,
+        @Path("playlist_id") playlistId: String
+    ): TracksResponse
 }
 
+object RetrofitInstance {
+    private const val BASE_URL = "https://api.spotify.com/v1/"
+
+    val api: SpotifyApi by lazy {
+        Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(SpotifyApi::class.java)
+    }
+}

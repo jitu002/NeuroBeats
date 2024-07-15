@@ -82,5 +82,8 @@ dependencies {
     implementation ("com.squareup.okhttp3:okhttp:4.9.3")
     implementation ("com.squareup.okhttp3:logging-interceptor:4.9.3")
     implementation ("com.google.firebase:firebase-firestore:25.0.0")
+    implementation("androidx.media3:media3-exoplayer:1.3.1")
+    //implementation("androidx.media3:media3-exoplayer-dash:1.3.1")
+    //implementation("androidx.media3:media3-ui:1.3.1")
 
 }
