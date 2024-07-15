@@ -54,18 +54,27 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
+import com.google.firebase.Firebase
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.firestore
 import com.neurobeat.neurobeats.authentication.SpotifyAuth
+import com.neurobeat.neurobeats.authentication.RetrofitInstance
 import com.neurobeat.neurobeats.authentication.viewmodel.AuthenticationState
 import com.neurobeat.neurobeats.authentication.viewmodel.AuthenticationViewModel
 import com.neurobeat.neurobeats.ui.theme.BackgroundColor
 import com.neurobeat.neurobeats.ui.theme.BarColor
 import com.neurobeat.neurobeats.ui.theme.txtColor
 import kotlinx.coroutines.launch
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.Path
+import com.neurobeat.neurobeats.Category
+import com.neurobeat.neurobeats.CategoriesResponse
+import com.neurobeat.neurobeats.Playlist
+import com.neurobeat.neurobeats.PlaylistResponse
+import com.neurobeat.neurobeats.DatabaseOperation
+import com.neurobeat.neurobeats.User
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -80,12 +89,16 @@ fun HomePage(navController: NavController) {
 
     val DrawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
+    val dbOps = remember { DatabaseOperation() }
+    var userData by remember { mutableStateOf<User?>(null) }
 
 
     LaunchedEffect(authState.value) {
         when(authState.value){
             is AuthenticationState.NotAuthenticated -> navController.navigate("LoginScreen")
-            else -> Unit
+            else -> {
+                userData=dbOps.fetchDataFromFirebase(auth = FirebaseAuth.getInstance(), firestore = Firebase.firestore)
+            }
         }
     }
 
@@ -95,7 +108,7 @@ fun HomePage(navController: NavController) {
         drawerContent = {
 
             Column(
-                modifier=Modifier
+                modifier= Modifier
                     .background(BackgroundColor)
                     .fillMaxHeight(),
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -121,7 +134,7 @@ fun HomePage(navController: NavController) {
                     ),
                     title = {
                         Text(
-                            "Welcome Boss",
+                            "Welcome $",
                             maxLines = 1,
                             fontSize =27.sp,
                             overflow = TextOverflow.Ellipsis
@@ -165,7 +178,7 @@ fun HomePage(navController: NavController) {
                                         RetrofitInstance.api.getPlaylists("Bearer $it", category.id).playlists.items
                                     }
                                     categoryPlaylistsMap = categoryPlaylists
-                                    Log.d("categoryPlaylistsMap", "$categoryPlaylistsMap")
+                                    Log.d("categoryPlaylistsMap", "Data successfully fetched")
                                 } catch (e: Exception) {
                                     Log.e("NeuroBeats error", "Error fetching data", e)
                                 }
@@ -272,18 +285,6 @@ fun PlaylistItem(playlist: Playlist) {
 
 
 
-data class CategoriesResponse(val categories: Categories)
-data class Categories(val items: List<Category>)
-data class Category(val id: String, val name: String)
-
-data class PlaylistResponse(val playlists: Playlists)
-data class Playlists(val items: List<Playlist>)
-data class Playlist(val id: String, val name: String, val images: List<ImageData>)
-data class ImageData(val url: String)
-
-
-
-
 interface SpotifyApi {
     @GET("browse/categories")
     suspend fun getCategories(
@@ -297,14 +298,3 @@ interface SpotifyApi {
     ): PlaylistResponse
 }
 
-object RetrofitInstance {
-    private const val BASE_URL = "https://api.spotify.com/v1/"
-
-    val api: SpotifyApi by lazy {
-        Retrofit.Builder()
-            .baseUrl(BASE_URL)
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-            .create(SpotifyApi::class.java)
-    }
-}

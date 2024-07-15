@@ -50,11 +50,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.google.firebase.firestore.FirebaseFirestore
+import com.neurobeat.neurobeats.DatabaseOperation
 import com.neurobeat.neurobeats.authentication.viewmodel.AuthenticationState
 import com.neurobeat.neurobeats.authentication.viewmodel.AuthenticationViewModel
 import com.neurobeat.neurobeats.ui.theme.BackgroundColor
 import com.neurobeat.neurobeats.ui.theme.txtColor
+import com.neurobeat.neurobeats.User
 
 @Composable
 fun SignupScreen(navController: NavController) {
@@ -95,32 +96,7 @@ fun SignupScreen(navController: NavController) {
     }
     val passwordVisualTransformation = remember { PasswordVisualTransformation() }
 
-    data class User(val usrName:String,val usrAge:Int)
-
-
-    fun addDataToFirestore(user:User){
-        val db=FirebaseFirestore.getInstance()
-        val userMap = hashMapOf(
-            "name" to user.usrName,
-            "age" to user.usrAge
-        )
-
-        // Add user data to the specific document within the userDetail collection
-        db.collection("userDetails").document("user")
-            .set(userMap)
-            .addOnSuccessListener {
-                Log.d("Firebase","Successfully added document")
-            }
-            .addOnFailureListener { e ->
-                // Handle failure
-                Log.d("Firebase error","$e")
-            }
-
-    }
-
-
-
-
+    val databaseOperation=DatabaseOperation()
 
 
     Column (
@@ -287,7 +263,7 @@ fun SignupScreen(navController: NavController) {
         }
         FilledTonalButton(
             onClick = {
-                addDataToFirestore(User(name,age.toInt()))
+                databaseOperation.addDataToFirestore(User(name,age.toInt(),email))
                 authenticationViewModel.signUp(email,password)
             },
             colors = ButtonDefaults.buttonColors(txtColor),
