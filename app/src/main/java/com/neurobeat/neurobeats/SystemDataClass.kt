@@ -1,6 +1,6 @@
 package com.neurobeat.neurobeats
 
-data class User(val usrName:String,val usrAge:Int,val usrEmail:String)
+data class User(val usrName:String="",val usrAge:Int=0,val usrEmail:String="")
 
 
 data class CategoriesResponse(val categories: Categories)

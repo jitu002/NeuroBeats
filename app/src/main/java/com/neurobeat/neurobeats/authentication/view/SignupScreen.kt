@@ -1,6 +1,5 @@
 package com.neurobeat.neurobeats.authentication.view
 
-import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -65,6 +64,7 @@ fun SignupScreen(navController: NavController) {
     val authenticationViewModel: AuthenticationViewModel= viewModel()
     val authState=authenticationViewModel.authState.observeAsState()
     val context = LocalContext.current
+
 
     LaunchedEffect(authState.value) {
         when (authState.value) {
@@ -263,8 +263,17 @@ fun SignupScreen(navController: NavController) {
         }
         FilledTonalButton(
             onClick = {
-                databaseOperation.addDataToFirestore(User(name,age.toInt(),email))
-                authenticationViewModel.signUp(email,password)
+                authenticationViewModel.signUp(email,password) {userId->
+                    if(userId!=null){
+
+                        databaseOperation.addDataToFirestore(User(name,age.toInt(),email),userId)
+                    }
+                    else{
+                        println("data adding uncessfull")
+                    }
+
+                }
+
             },
             colors = ButtonDefaults.buttonColors(txtColor),
             modifier = Modifier

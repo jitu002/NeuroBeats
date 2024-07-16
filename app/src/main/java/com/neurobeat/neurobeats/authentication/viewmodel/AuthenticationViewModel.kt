@@ -48,22 +48,23 @@ class AuthenticationViewModel: ViewModel() {
     }
 
 
-    fun signUp (email: String, password: String) {
-
-        if (email.isEmpty() || password.isEmpty()){
-            _authState.value=AuthenticationState.Error("Email or password can't be empty")
+    fun signUp(email: String, password: String, callback: (String?) -> Unit) {
+        if (email.isEmpty() || password.isEmpty()) {
+            _authState.value = AuthenticationState.Error("Email or password can't be empty")
+            callback(null) // Return null when there's an error
+            return
         }
 
-
-        auth.createUserWithEmailAndPassword(email,password)
-            .addOnCompleteListener {result->
-                if(result.isSuccessful){
-                    _authState.value=AuthenticationState.Authenticated
+        auth.createUserWithEmailAndPassword(email, password)
+            .addOnCompleteListener { result ->
+                if (result.isSuccessful) {
+                    _authState.value = AuthenticationState.Authenticated
+                    val userId = auth.currentUser?.uid
+                    callback(userId) // Return the userId when successful
+                } else {
+                    _authState.value = AuthenticationState.Error(result.exception?.message ?: "Something's not right")
+                    callback(null) // Return null when there's an error
                 }
-                else{
-                    _authState.value=AuthenticationState.Error(result.exception?.message?:"Something's not right")
-                }
-
             }
     }
 

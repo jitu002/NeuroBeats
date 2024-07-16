@@ -55,6 +55,9 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import com.neurobeat.neurobeats.DatabaseOperation
 import com.neurobeat.neurobeats.api.models.CategoriesResponse
 import com.neurobeat.neurobeats.api.models.Category
 import com.neurobeat.neurobeats.api.models.Playlist
@@ -83,15 +86,25 @@ fun HomePage(navController: NavController) {
     var accessToken by remember { mutableStateOf<String?>(null) }
     var categoryPlaylistsMap by remember { mutableStateOf<Map<Category, List<Playlist>>?>(null) }
     val coroutineScope = rememberCoroutineScope()
-
+    val dboperation=DatabaseOperation()
     val drawerState = rememberDrawerState(DrawerValue.Closed)
-    val scope = rememberCoroutineScope()
+    val scope= rememberCoroutineScope()
+    val userScope= rememberCoroutineScope()
+
+    var username by remember {
+        mutableStateOf("")
+    }
 
 
     LaunchedEffect(authState.value) {
         when(authState.value){
             is AuthenticationState.NotAuthenticated -> navController.navigate("LoginScreen")
-            else -> Unit
+            else ->userScope.launch {
+                Log.d("AuthState","${authState.value}")
+                dboperation.fetchDataFromFirebase(FirebaseAuth.getInstance(), FirebaseFirestore.getInstance()){user->
+                    username = user?.usrName ?: "Guest"
+                }
+            }
         }
     }
 
@@ -101,7 +114,7 @@ fun HomePage(navController: NavController) {
         drawerContent = {
 
             Column(
-                modifier=Modifier
+                modifier= Modifier
                     .background(BackgroundColor)
                     .fillMaxHeight(),
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -127,8 +140,8 @@ fun HomePage(navController: NavController) {
                     ),
                     title = {
                         Text(
-                            "Welcome Boss",
-                            maxLines = 1,
+                            "Welcome $username",
+                            maxLines = 3,
                             fontSize =27.sp,
                             overflow = TextOverflow.Ellipsis
                         )
