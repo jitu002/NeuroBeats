@@ -6,7 +6,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.neurobeat.neurobeats.api.models.TrackItem
-import com.neurobeat.neurobeats.api.models.TracksResponse
 import com.neurobeat.neurobeats.pages.RetrofitInstance
 import kotlinx.coroutines.launch
 

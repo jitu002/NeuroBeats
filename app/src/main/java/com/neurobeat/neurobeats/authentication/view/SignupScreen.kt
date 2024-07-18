@@ -54,7 +54,7 @@ import com.neurobeat.neurobeats.authentication.viewmodel.AuthenticationState
 import com.neurobeat.neurobeats.authentication.viewmodel.AuthenticationViewModel
 import com.neurobeat.neurobeats.ui.theme.BackgroundColor
 import com.neurobeat.neurobeats.ui.theme.txtColor
-import com.neurobeat.neurobeats.User
+import com.neurobeat.neurobeats.api.models.User
 
 @Composable
 fun SignupScreen(navController: NavController) {

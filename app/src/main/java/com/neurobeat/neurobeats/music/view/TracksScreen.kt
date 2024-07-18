@@ -2,12 +2,15 @@ package com.neurobeat.neurobeats.music.view
 
 import android.util.Log
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -15,12 +18,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter
 import com.neurobeat.neurobeats.api.models.Track
 import com.neurobeat.neurobeats.music.viewmodels.PlaylistViewModel
+import com.neurobeat.neurobeats.ui.theme.BackgroundColor
+import com.neurobeat.neurobeats.ui.theme.txtColor
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 
@@ -29,7 +35,8 @@ fun TracksScreen(
     navController: NavHostController,
     viewModel: PlaylistViewModel,
     playlistId: String,
-    accessToken: String
+    accessToken: String,
+    playlistImage: String
 ) {
     LaunchedEffect(playlistId, accessToken) {
         viewModel.fetchPlaylistTracks(accessToken, playlistId)
@@ -37,7 +44,20 @@ fun TracksScreen(
 
     val tracks by viewModel.tracks.observeAsState(emptyList())
 
-    LazyColumn {
+    LazyColumn(
+        modifier= Modifier
+            .background(BackgroundColor)
+            .fillMaxSize()
+    ) {
+        item {
+            Image(
+                painter = rememberAsyncImagePainter(model = playlistImage ),
+                contentDescription ="Playlist image",
+                modifier = Modifier
+                    .size(400.dp)
+                    .clip(RoundedCornerShape(20.dp))
+            )
+        }
         items(tracks) { trackItem ->
             TrackItemView(track = trackItem.track) {
                 val previewUrl = trackItem.track.preview_url ?: return@TrackItemView
@@ -65,7 +85,9 @@ fun TrackItemView(track: Track, onClick: () -> Unit) {
             .padding(10.dp, 15.dp)
             .fillMaxWidth()
             .clickable { onClick() },
-        shape = RoundedCornerShape(8.dp)
+        shape = RoundedCornerShape(8.dp),
+        colors= CardDefaults.outlinedCardColors(Color.Transparent),
+        elevation = CardDefaults.cardElevation(0.dp)
     ) {
         Row(modifier = Modifier.padding(8.dp)) {
             if (track.album.images.isNotEmpty()) {
@@ -80,9 +102,10 @@ fun TrackItemView(track: Track, onClick: () -> Unit) {
             }
             Spacer(modifier = Modifier.width(15.dp))
             Column {
-                Text(text = track.name, fontSize = 18.sp)
-                Text(text = track.artists.joinToString(", ") { it.name }, fontSize = 16.sp)
+                Text(text = track.name, fontSize = 18.sp, color = txtColor)
+                Text(text = track.artists.joinToString(", ") { it.name }, fontSize = 16.sp,color= txtColor)
             }
         }
     }
+    HorizontalDivider(thickness = 0.5.dp, color = txtColor)
 }

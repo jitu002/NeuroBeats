@@ -4,10 +4,13 @@ import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.toObject
+import com.neurobeat.neurobeats.api.models.User
 
 
 class DatabaseOperation {
-    fun addDataToFirestore(user:User,userId:String){
+
+    //Function to add data to fiestore
+    fun addDataToFirestore(user: User, userId:String){
 
         println(userId)
         val db= FirebaseFirestore.getInstance()
@@ -30,6 +33,9 @@ class DatabaseOperation {
 
 
     }
+
+
+    //Function to fetch data to firestore
     fun fetchDataFromFirebase(auth: FirebaseAuth, firestore: FirebaseFirestore, callback: (User?) -> Unit) {
         val userId = auth.currentUser?.uid
         println("UserId: $userId")

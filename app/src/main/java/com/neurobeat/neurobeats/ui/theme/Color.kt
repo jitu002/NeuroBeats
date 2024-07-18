@@ -30,6 +30,23 @@ val BackgroundColor = Brush.linearGradient(
     start = Offset(0f, 0f), // Top-left corner
     end = Offset.Infinite // Bottom-right corner
 )
+val profileColor=listOf(
+    Color(0xFF2F4F4F),
+    Color(0xFF556B2F),
+    Color(0xFF006400),
+    Color(0xFF00008B),
+    Color(0xFF4B0082),
+    Color(0xFF191970),
+    Color(0xFF8B0000),
+    Color(0xFFFF8C00),
+    Color(0xFF9932CC),
+    Color(0xFF8B4513),
+    Color(0xFF483D8B),
+    Color(0xFF800000),
+    Color(0xFF8B008B),
+    Color(0xFFB22222),
+    Color(0xFFD2691E)
+)
 
 val BarColor=Color(0xFF1e0a35)
 

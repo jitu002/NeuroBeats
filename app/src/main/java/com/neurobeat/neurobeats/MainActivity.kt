@@ -19,6 +19,7 @@ import com.neurobeat.neurobeats.music.view.MusicPlayerScreen
 import com.neurobeat.neurobeats.music.view.TracksScreen
 import com.neurobeat.neurobeats.music.viewmodels.PlaylistViewModel
 import com.neurobeat.neurobeats.pages.HomePage
+import com.neurobeat.neurobeats.pages.Profile
 
 class MainActivity : ComponentActivity() {
     private val viewModel: PlaylistViewModel by viewModels()
@@ -67,13 +68,16 @@ fun AppNavigation(viewModel: PlaylistViewModel) {
                 duration_ms = backStackEntry.arguments?.getString("duration_ms") ?: ""
             )
         }
-        composable("TracksScreen/{playlistId}/{token}") { backStackEntry ->
+        composable("TracksScreen/{playlistId}/{token}/{playlistImage}") { backStackEntry ->
+
             TracksScreen(
                 navController = navController,
                 viewModel = viewModel,
                 playlistId = backStackEntry.arguments?.getString("playlistId") ?: "",
-                accessToken = backStackEntry.arguments?.getString("token") ?: ""
+                accessToken = backStackEntry.arguments?.getString("token") ?: "",
+                playlistImage =backStackEntry.arguments?.getString("playlistImage") ?: ""
             )
         }
+        composable("Profile"){Profile(navController)}
     }
 }

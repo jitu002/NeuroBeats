@@ -5,6 +5,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -17,6 +18,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
@@ -49,6 +51,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -68,6 +71,7 @@ import com.neurobeat.neurobeats.authentication.viewmodel.AuthenticationState
 import com.neurobeat.neurobeats.authentication.viewmodel.AuthenticationViewModel
 import com.neurobeat.neurobeats.ui.theme.BackgroundColor
 import com.neurobeat.neurobeats.ui.theme.BarColor
+import com.neurobeat.neurobeats.ui.theme.profileColor
 import com.neurobeat.neurobeats.ui.theme.txtColor
 import kotlinx.coroutines.launch
 import retrofit2.Retrofit
@@ -91,6 +95,10 @@ fun HomePage(navController: NavController) {
     val scope= rememberCoroutineScope()
     val userScope= rememberCoroutineScope()
 
+    var profileTxt by remember { mutableStateOf("") }
+    val backgroundColor = remember { profileColor.random() }
+
+
     var username by remember {
         mutableStateOf("")
     }
@@ -103,6 +111,7 @@ fun HomePage(navController: NavController) {
                 Log.d("AuthState","${authState.value}")
                 dboperation.fetchDataFromFirebase(FirebaseAuth.getInstance(), FirebaseFirestore.getInstance()){user->
                     username = user?.usrName ?: "Guest"
+                    profileTxt=username.first().uppercaseChar().toString()
                 }
             }
         }
@@ -116,14 +125,43 @@ fun HomePage(navController: NavController) {
             Column(
                 modifier= Modifier
                     .background(BackgroundColor)
-                    .fillMaxHeight(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
+                    .fillMaxHeight()
+                    .width(200.dp)
+                    .padding(top = 50.dp),
+                horizontalAlignment = Alignment.Start,
+                verticalArrangement = Arrangement.Top
             ) {
-                TextButton(onClick = {
+
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier
+                            .background(backgroundColor, CircleShape)
+                            .size(120.dp)
+                            .fillMaxSize()
+                            .clickable {
+                                navController.navigate("Profile")
+                            }
+                    ) {
+                        Text(text = profileTxt,color= txtColor, fontSize = 50.sp)
+                    }
+                    Text(text = username, style = MaterialTheme.typography.bodyLarge, color = txtColor)
+
+                }
+                TextButton(
+                    onClick = {
                     authenticationViewModel.signOut()
-                }) {
-                    Text(text = "Sign out")
+                },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .width(200.dp)
+                        .padding(20.dp)
+                ) {
+                    Text(text = "Sign out", style = MaterialTheme.typography.bodyLarge, color = txtColor, fontSize = 18.sp,modifier = Modifier.fillMaxWidth())
                 }
             }
 
@@ -272,7 +310,15 @@ fun CategoryPlaylistsList(
 
 @Composable
 fun PlaylistItem(playlist: Playlist, navController: NavController, accessToken: String?) {
-    Column ( modifier = Modifier.clickable { navController.navigate("TracksScreen/${playlist.id}/${accessToken}") } ) {
+
+
+    Column (
+
+        modifier = Modifier.clickable {
+            val imageURL= playlist.images.first().url
+            navController.navigate("TracksScreen/${playlist.id}/${accessToken}/${imageURL}")
+        }
+    ) {
         if (playlist.images.isNotEmpty()){
             val imageUrl=playlist.images.first().url
             Image(
