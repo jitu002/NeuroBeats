@@ -49,7 +49,9 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun AppNavigation(viewModel: PlaylistViewModel) {
+fun AppNavigation(
+    playlistViewModel: PlaylistViewModel
+) {
     val navController = rememberNavController()
 
     NavHost(navController = navController, startDestination = "LoginScreen") {
@@ -68,14 +70,13 @@ fun AppNavigation(viewModel: PlaylistViewModel) {
                 duration_ms = backStackEntry.arguments?.getString("duration_ms") ?: ""
             )
         }
-        composable("TracksScreen/{playlistId}/{token}/{playlistImage}") { backStackEntry ->
-
+        composable("TracksScreen/{playlistId}/{token}/{playlistImage}") {backStackEntry ->
             TracksScreen(
                 navController = navController,
-                viewModel = viewModel,
+                viewModel = playlistViewModel,
                 playlistId = backStackEntry.arguments?.getString("playlistId") ?: "",
                 accessToken = backStackEntry.arguments?.getString("token") ?: "",
-                playlistImage =backStackEntry.arguments?.getString("playlistImage") ?: ""
+                playlistImage = backStackEntry.arguments?.getString("playlistImage") ?: ""
             )
         }
         composable("Profile"){Profile(navController)}

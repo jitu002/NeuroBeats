@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Divider
@@ -26,6 +27,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -33,7 +35,6 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.neurobeat.neurobeats.R
 import com.neurobeat.neurobeats.ui.theme.BackgroundColor
-import com.neurobeat.neurobeats.ui.theme.txtBgColor
 import com.neurobeat.neurobeats.ui.theme.txtColor
 
 @Composable
@@ -60,7 +61,11 @@ fun ArtistLibraryScreen(navController: NavHostController) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .align(Alignment.BottomStart)
-                    .background(brush = Brush.verticalGradient(txtBgColor))
+                    .background(Color.Black.copy(alpha = 0.5f))
+                    .graphicsLayer {
+                        shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
+                        clip = true
+                    }
                     .padding(horizontal = 20.dp)
             )
         }

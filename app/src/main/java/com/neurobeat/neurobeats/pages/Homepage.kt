@@ -79,6 +79,8 @@ import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.Path
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -310,19 +312,17 @@ fun CategoryPlaylistsList(
 
 @Composable
 fun PlaylistItem(playlist: Playlist, navController: NavController, accessToken: String?) {
-
-
+    var playlistImage = ""
     Column (
-
         modifier = Modifier.clickable {
-            val imageURL= playlist.images.first().url
-            navController.navigate("TracksScreen/${playlist.id}/${accessToken}/${imageURL}")
+            val encodedImageUrl = URLEncoder.encode(playlistImage, StandardCharsets.UTF_8.toString())
+            navController.navigate("TracksScreen/${playlist.id}/$accessToken/$encodedImageUrl")
         }
     ) {
         if (playlist.images.isNotEmpty()){
-            val imageUrl=playlist.images.first().url
+            playlistImage = playlist.images.first().url
             Image(
-                painter = rememberAsyncImagePainter(model = imageUrl ),
+                painter = rememberAsyncImagePainter(model = playlistImage ),
                 contentDescription = "playlist image",
                 modifier = Modifier
                     .size(150.dp)

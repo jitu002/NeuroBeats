@@ -51,4 +51,3 @@ val profileColor=listOf(
 val BarColor=Color(0xFF1e0a35)
 
 val txtColor = Color.White
-val txtBgColor = listOf(Color.Transparent, Color.Black)
