@@ -15,12 +15,15 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronLeft
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -37,11 +40,13 @@ import androidx.navigation.NavController
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.neurobeat.neurobeats.DatabaseOperation
+import com.neurobeat.neurobeats.api.models.User
 import com.neurobeat.neurobeats.ui.theme.BackgroundColor
 import com.neurobeat.neurobeats.ui.theme.profileColor
 import com.neurobeat.neurobeats.ui.theme.txtColor
 import kotlin.random.Random
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Profile(navController: NavController){
 
@@ -50,6 +55,9 @@ fun Profile(navController: NavController){
     var age by remember { mutableStateOf(0) }
     var email by remember { mutableStateOf("") }
     var profileTxt by remember { mutableStateOf("") }
+    var readOnly by remember { mutableStateOf(true) }
+    val user= User(username,age,email)
+    val dbOperation=DatabaseOperation()
 
     val backgroundColor = remember { profileColor.random() }
 
@@ -81,10 +89,10 @@ fun Profile(navController: NavController){
             contentAlignment = Alignment.Center,
             modifier = Modifier
                 .background(backgroundColor, CircleShape)
-                .size(300.dp)
+                .size(250.dp)
                 .fillMaxSize()
         ) {
-            Text(text = profileTxt, color = txtColor, fontSize = 250.sp)
+            Text(text = profileTxt, color = txtColor, fontSize = 200.sp)
         }
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -93,40 +101,75 @@ fun Profile(navController: NavController){
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(text = "Name",color= txtColor, style = MaterialTheme.typography.bodyLarge)
-                Text(text = username,color= txtColor, style = MaterialTheme.typography.bodyLarge, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
+                TextField(
+                    value = username,
+                    onValueChange = { username = it },
+                    readOnly = readOnly,
+                    colors = TextFieldDefaults.colors(
+                        unfocusedContainerColor = Color.Transparent,
+                        focusedIndicatorColor = Color.Cyan,
+                        focusedContainerColor = Color.Transparent
+                    ),
+                    textStyle = MaterialTheme.typography.bodyLarge.copy(fontSize = 16.sp, textAlign = TextAlign.Center),
+                    modifier = Modifier
+                        .background(Color.Transparent),
+                )
             }
-            HorizontalDivider(thickness = 0.5.dp, color = txtColor)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(text = "Age",color= txtColor, style = MaterialTheme.typography.bodyLarge)
-                Text(text = age.toString(),color= txtColor, style = MaterialTheme.typography.bodyLarge,textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
+                TextField(
+                    value = age.toString(),
+                    onValueChange = { age = it.toInt() },
+                    readOnly = readOnly,
+                    colors = TextFieldDefaults.colors(
+                        unfocusedContainerColor = Color.Transparent,
+                        focusedIndicatorColor = Color.Cyan,
+                        focusedContainerColor = Color.Transparent
+                    ),
+                    textStyle = MaterialTheme.typography.bodyLarge.copy(fontSize = 16.sp, textAlign = TextAlign.Center),
+                    modifier = Modifier
+                        .background(Color.Transparent),
+                )
             }
-
-            HorizontalDivider(thickness = 0.5.dp, color = txtColor)
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(text = "Email",color= txtColor, style = MaterialTheme.typography.bodyLarge)
-                Text(text = email,color= txtColor, style = MaterialTheme.typography.bodyLarge,textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
+                TextField(
+                    value = email,
+                    onValueChange = { email = it },
+                    readOnly = true,
+                    colors = TextFieldDefaults.colors(
+                        unfocusedContainerColor = Color.Transparent,
+                        focusedIndicatorColor = Color.Cyan,
+                        focusedContainerColor = Color.Transparent
+                    ),
+                    textStyle = MaterialTheme.typography.bodyLarge.copy(fontSize = 16.sp, textAlign = TextAlign.Center),
+                    modifier = Modifier
+                        .background(Color.Transparent),
+                )
             }
-
-            HorizontalDivider(thickness = 0.5.dp, color = txtColor)
             OutlinedButton(
                 onClick = {
-
+                    readOnly=!readOnly
+                    dbOperation.updateData(user, FirebaseAuth.getInstance(), FirebaseFirestore.getInstance())
                 },
                 modifier = Modifier
-                    .padding(top=20.dp)
+                    .padding(top = 20.dp)
                     .width(120.dp)
                     .height(50.dp)
             ) {
-                Text(text = "Edit", style = MaterialTheme.typography.bodyLarge,fontSize=16.sp)
+                Text(text = if (readOnly)"Edit" else "Update", style = MaterialTheme.typography.bodyLarge,fontSize=16.sp)
             }
             TextButton(onClick = {
                 navController.navigate("Homepage")

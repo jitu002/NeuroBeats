@@ -34,7 +34,7 @@ class MainActivity : ComponentActivity() {
     }
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        intent?.data?.let { uri ->
+        intent.data?.let { uri ->
             handleRedirectUri(uri)
         }
     }
@@ -42,9 +42,6 @@ class MainActivity : ComponentActivity() {
     private fun handleRedirectUri(uri: Uri) {
         // Extract the authorization code or token from the URI
         val code = uri.getQueryParameter("code")
-        if (code != null) {
-            // Use the authorization code to get the access token
-        }
     }
 }
 

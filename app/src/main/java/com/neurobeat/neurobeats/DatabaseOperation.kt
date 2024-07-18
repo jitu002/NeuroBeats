@@ -64,4 +64,30 @@ class DatabaseOperation {
             callback(null)
         }
     }
+    fun updateData(user: User,auth: FirebaseAuth,firestore: FirebaseFirestore){
+        val userId=auth.currentUser?.uid
+
+        val userMap= hashMapOf(
+            "usrName" to user.usrName,
+            "usrAge" to user.usrAge,
+            "usrEmail" to user.usrEmail
+        )
+
+
+        if(userId!=null){
+            try {
+                firestore.collection("userDetails").document(userId)
+                    .update(userMap as Map<String, Any>)
+                    .addOnSuccessListener {
+                    Log.d("Update","Successfully updated data")
+                }
+                    .addOnFailureListener {
+                        Log.d("Update","Error in updating data")
+                    }
+            }
+            catch (e:Exception){
+                println("$e")
+            }
+        }
+    }
 }

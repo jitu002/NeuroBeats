@@ -112,7 +112,7 @@ fun HomePage(navController: NavController) {
             else ->userScope.launch {
                 Log.d("AuthState","${authState.value}")
                 dboperation.fetchDataFromFirebase(FirebaseAuth.getInstance(), FirebaseFirestore.getInstance()){user->
-                    username = user?.usrName ?: "Guest"
+                    username = user?.usrName?.split(" ")?.getOrNull(0) ?: "Guest"
                     profileTxt=username.first().uppercaseChar().toString()
                 }
             }
