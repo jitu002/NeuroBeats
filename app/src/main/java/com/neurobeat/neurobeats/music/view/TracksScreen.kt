@@ -93,10 +93,12 @@ fun TracksScreen(
                     val encodedAlbumImageUrl = URLEncoder.encode(albumImageUrl, StandardCharsets.UTF_8.toString())
                     val artists = trackItem.track.artists.joinToString(", ") { it.name }
                     val encodedArtists = URLEncoder.encode(artists, StandardCharsets.UTF_8.toString())
+                    val artistsIds = trackItem.track.artists.joinToString(",") { it.id }
+                    val encodedArtistsIds = URLEncoder.encode(artistsIds, StandardCharsets.UTF_8.toString())
                     val duration = trackItem.track.duration_ms.toString()
                     val encodedDuration = URLEncoder.encode(duration, StandardCharsets.UTF_8.toString())
 
-                    navController.navigate("MusicPlayer/$encodedPreviewUrl/$encodedTrackName/$encodedAlbumName/$encodedAlbumImageUrl/$encodedArtists/$encodedDuration")
+                    navController.navigate("MusicPlayer/$accessToken/$encodedPreviewUrl/$encodedTrackName/$encodedAlbumName/$encodedAlbumImageUrl/$encodedArtists/$encodedDuration/$encodedArtistsIds")
                     Log.d("TrackItem", trackItem.track.album.images.first().url)
                 }
             }

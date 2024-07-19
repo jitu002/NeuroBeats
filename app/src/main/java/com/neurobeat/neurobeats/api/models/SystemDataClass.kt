@@ -23,9 +23,6 @@ data class ImageData(val url: String)
 
 
 //Track api signature
-data class Tracks(
-    val href: String
-)
 
 data class TracksResponse(
     val items: List<TrackItem>
@@ -61,4 +58,49 @@ data class Image(
     val width: Int?
 )
 
+// Artist Data class
 
+data class ArtistList(
+    val artists: List<ArtistResponse>
+)
+
+data class ArtistResponse(
+    val id: String,
+    val name: String,
+    val genres: List<String>,
+    val images: List<Image>,
+    val followers: Followers,
+    val popularity: Int
+)
+
+data class Followers(
+    val total: Int
+)
+
+// Top-Track data classes
+
+data class TopTracksResponse(
+    val tracks: List<TopTrack>
+)
+
+data class TopTrack(
+    val name: String,
+    val preview_url: String?,
+    val album: TopAlbum,
+    val artists: List<TopArtist>,
+    val duration_ms: Long
+)
+
+data class TopAlbum(
+    val name: String,
+    val images: List<TopImage>
+)
+
+data class TopArtist(
+    val name: String,
+    val id: String
+)
+
+data class TopImage(
+    val url: String
+)

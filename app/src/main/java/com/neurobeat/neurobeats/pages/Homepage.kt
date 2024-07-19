@@ -61,10 +61,13 @@ import coil.compose.rememberAsyncImagePainter
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.neurobeat.neurobeats.DatabaseOperation
+import com.neurobeat.neurobeats.api.models.ArtistList
+import com.neurobeat.neurobeats.api.models.ArtistResponse
 import com.neurobeat.neurobeats.api.models.CategoriesResponse
 import com.neurobeat.neurobeats.api.models.Category
 import com.neurobeat.neurobeats.api.models.Playlist
 import com.neurobeat.neurobeats.api.models.PlaylistResponse
+import com.neurobeat.neurobeats.api.models.TopTracksResponse
 import com.neurobeat.neurobeats.api.models.TracksResponse
 import com.neurobeat.neurobeats.authentication.SpotifyAuth
 import com.neurobeat.neurobeats.authentication.viewmodel.AuthenticationState
@@ -79,6 +82,8 @@ import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.Path
+import retrofit2.http.Query
+import retrofit2.http.Url
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 
@@ -356,6 +361,25 @@ interface SpotifyApi {
         @Header("Authorization") token: String,
         @Path("playlist_id") playlistId: String
     ): TracksResponse
+
+    @GET("artists")
+    suspend fun getArtists(
+        @Header("Authorization") token: String,
+        @Query("ids") ids: String
+    ): ArtistList
+
+    @GET("artists/{id}/top-tracks")
+    suspend fun getArtistTracks(
+        @Header("Authorization") token: String,
+        @Path("id") artistId: String,
+        @Query("market") market: String = "IN"
+    ): TopTracksResponse
+
+    @GET("artists/{id}")
+    suspend fun getArtist(
+        @Header("Authorization") token: String,
+        @Path("id") artistId: String
+    ): ArtistResponse
 }
 
 object RetrofitInstance {

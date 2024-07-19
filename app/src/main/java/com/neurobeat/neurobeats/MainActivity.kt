@@ -11,24 +11,30 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.neurobeat.neurobeats.authentication.view.LoginScreen
-import com.neurobeat.neurobeats.ui.theme.NeuroBeatsTheme
-import com.neurobeat.neurobeats.authentication.view.SignupScreen
 import com.neurobeat.neurobeats.artist.view.ArtistLibraryScreen
+import com.neurobeat.neurobeats.artist.viewmodel.AllArtistsViewModel
+import com.neurobeat.neurobeats.artist.viewmodel.ArtistLibraryViewModel
+import com.neurobeat.neurobeats.artist.viewmodel.ArtistViewModel
+import com.neurobeat.neurobeats.authentication.view.LoginScreen
+import com.neurobeat.neurobeats.authentication.view.SignupScreen
 import com.neurobeat.neurobeats.music.view.MusicPlayerScreen
 import com.neurobeat.neurobeats.music.view.TracksScreen
 import com.neurobeat.neurobeats.music.viewmodels.PlaylistViewModel
 import com.neurobeat.neurobeats.pages.HomePage
 import com.neurobeat.neurobeats.pages.Profile
+import com.neurobeat.neurobeats.ui.theme.NeuroBeatsTheme
 
 class MainActivity : ComponentActivity() {
-    private val viewModel: PlaylistViewModel by viewModels()
+    private val playlistViewModel: PlaylistViewModel by viewModels()
+    private val artistLibraryViewModel: ArtistLibraryViewModel by viewModels()
+    private val artistViewModel: ArtistViewModel by viewModels()
+    private val allArtistViewModel: AllArtistsViewModel by viewModels()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
             NeuroBeatsTheme {
-                AppNavigation(viewModel)
+                AppNavigation(playlistViewModel, artistLibraryViewModel, artistViewModel, allArtistViewModel)
             }
         }
     }
@@ -47,7 +53,10 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun AppNavigation(
-    playlistViewModel: PlaylistViewModel
+    playlistViewModel: PlaylistViewModel,
+    artistLibraryViewModel: ArtistLibraryViewModel,
+    artistViewModel: ArtistViewModel,
+    allArtistViewModel: AllArtistsViewModel
 ) {
     val navController = rememberNavController()
 
@@ -55,16 +64,27 @@ fun AppNavigation(
         composable("LoginScreen") { LoginScreen(navController)}
         composable("SignupScreen") { SignupScreen(navController)}
         composable("Homepage") { HomePage(navController) }
-        composable("ArtistLibrary") { ArtistLibraryScreen(navController) }
-        composable("MusicPlayer/{preview_url}/{trackName}/{albumName}/{albumImage}/{artists}/{duration_ms}") { backStackEntry ->
+        composable("ArtistLibrary/{artistId}/{token}") {backStackEntry ->
+            ArtistLibraryScreen(
+                navController = navController,
+                artistLibraryViewModel = artistLibraryViewModel,
+                artistViewModel = artistViewModel,
+                artistId = backStackEntry.arguments?.getString("artistId") ?: "",
+                accessToken = backStackEntry.arguments?.getString("token") ?: ""
+            )
+        }
+        composable("MusicPlayer/{token}/{preview_url}/{trackName}/{albumName}/{albumImage}/{artists}/{duration_ms}/{artistsIds}") { backStackEntry ->
             MusicPlayerScreen(
                 navController = navController,
+                viewModel = allArtistViewModel,
+                accessToken = backStackEntry.arguments?.getString("token") ?: "",
                 preview_url = backStackEntry.arguments?.getString("preview_url") ?: "",
                 trackName = backStackEntry.arguments?.getString("trackName") ?: "",
                 albumName = backStackEntry.arguments?.getString("albumName") ?: "",
                 albumImage = backStackEntry.arguments?.getString("albumImage") ?: "",
                 artists = backStackEntry.arguments?.getString("artists") ?: "",
-                duration_ms = backStackEntry.arguments?.getString("duration_ms") ?: ""
+                duration_ms = backStackEntry.arguments?.getString("duration_ms") ?: "",
+                artistIds = backStackEntry.arguments?.getString("artistsIds") ?: ""
             )
         }
         composable("TracksScreen/{playlistId}/{token}/{playlistImage}") {backStackEntry ->

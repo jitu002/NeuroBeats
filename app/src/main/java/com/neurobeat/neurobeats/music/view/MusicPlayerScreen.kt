@@ -28,6 +28,8 @@ import androidx.media3.common.MediaItem
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
+import com.neurobeat.neurobeats.artist.view.ArtistsDialog
+import com.neurobeat.neurobeats.artist.viewmodel.AllArtistsViewModel
 import com.neurobeat.neurobeats.ui.theme.BackgroundColor
 import com.neurobeat.neurobeats.ui.theme.txtColor
 import kotlinx.coroutines.delay
@@ -37,29 +39,27 @@ import java.nio.charset.StandardCharsets
 @Composable
 fun MusicPlayerScreen(
     navController: NavController,
+    viewModel: AllArtistsViewModel,
+    accessToken: String,
     trackName: String,
     albumName: String,
     albumImage: String,
     artists: String,
     preview_url: String?,
-    duration_ms: String
+    duration_ms: String,
+    artistIds: String
 ) {
     val decodedTrackName = URLDecoder.decode(trackName, StandardCharsets.UTF_8.toString())
     val decodedAlbumName = URLDecoder.decode(albumName, StandardCharsets.UTF_8.toString())
     val decodedAlbumImage = URLDecoder.decode(albumImage, StandardCharsets.UTF_8.toString())
     val decodedArtists = URLDecoder.decode(artists, StandardCharsets.UTF_8.toString())
+    val decodedArtistsIds = URLDecoder.decode(artistIds, StandardCharsets.UTF_8.toString())
     val decodedPreviewUrl = URLDecoder.decode(preview_url, StandardCharsets.UTF_8.toString())
 //    val decodedDuration = URLDecoder.decode(duration_ms, StandardCharsets.UTF_8.toString()).toFloat()
 
     // preview_url has max 29 sec
     val decodedDuration = 29000f
 
-//    Log.d("MusicPlayerScreen", "Artists: $decodedArtists")
-//    Log.d("MusicPlayerScreen", "TrackName: $decodedTrackName")
-//    Log.d("MusicPlayerScreen", "AlbumName: $decodedAlbumName")
-//    Log.d("MusicPlayerScreen", "AlbumImage: $decodedAlbumImage")
-//    Log.d("MusicPlayerScreen", "PreviewUrl: $decodedPreviewUrl")
-//    Log.d("MusicPlayerScreen", "Duration: $decodedDuration")
     val context = LocalContext.current
 
     // Remember ExoPlayer instance
@@ -90,6 +90,8 @@ fun MusicPlayerScreen(
             delay(1000L)
         }
     }
+
+    var showDialog by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -126,12 +128,14 @@ fun MusicPlayerScreen(
                 .size(320.dp)
                 .clip(RoundedCornerShape(20.dp))
         )
-        Spacer(modifier = Modifier.height(100.dp))
+        Spacer(modifier = Modifier.height(80.dp))
         Column(
             modifier = Modifier.padding(horizontal = 30.dp)
         ) {
             Text(text = decodedTrackName, color = txtColor, modifier = Modifier.fillMaxWidth())
-            Text(text = decodedArtists, color = txtColor, fontSize = 16.sp)
+            Text(text = decodedArtists, color = txtColor, fontSize = 16.sp,
+                modifier = Modifier.clickable { showDialog = true }
+            )
             Spacer(modifier = Modifier.height(16.dp))
 
             TrackSlider(
@@ -174,6 +178,16 @@ fun MusicPlayerScreen(
                 onPreviousClicked = {}
             )
         }
+    }
+
+    if (showDialog) {
+        ArtistsDialog(
+            navController = navController,
+            viewModel = viewModel,
+            accessToken = accessToken,
+            artistIds = decodedArtistsIds,
+            onDismissRequest = { showDialog = false }
+        )
     }
 }
 
