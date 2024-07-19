@@ -20,6 +20,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -108,7 +109,7 @@ fun TracksScreen(
 
 @Composable
 fun TrackItemView(track: Track, onClick: () -> Unit) {
-    Card(
+    OutlinedCard(
         modifier = Modifier
             .padding(10.dp)
             .fillMaxWidth()
@@ -135,5 +136,4 @@ fun TrackItemView(track: Track, onClick: () -> Unit) {
             }
         }
     }
-    HorizontalDivider(thickness = 0.5.dp, color = Color.LightGray)
 }

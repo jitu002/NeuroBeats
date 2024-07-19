@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
 import com.neurobeat.neurobeats.api.models.ArtistResponse
+import com.neurobeat.neurobeats.ui.theme.txtColor
 
 @Composable
 fun ArtistItemView(artist: ArtistResponse, onClick: () -> Unit) {
@@ -36,7 +37,7 @@ fun ArtistItemView(artist: ArtistResponse, onClick: () -> Unit) {
         }
         Spacer(modifier = Modifier.width(15.dp))
         Column {
-            Text(text = artist.name, fontSize = 16.sp)
+            Text(text = artist.name, fontSize = 18.sp)
             Text(text = "Followers: ${artist.followers.total}", fontSize = 14.sp)
         }
     }
