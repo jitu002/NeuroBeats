@@ -2,8 +2,10 @@ package com.neurobeat.neurobeats.music.view
 
 import android.annotation.SuppressLint
 import android.net.Uri
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -35,6 +37,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -47,9 +50,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.media3.common.MediaItem
+import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
+import com.neurobeat.neurobeats.api.models.Track
+import com.neurobeat.neurobeats.api.models.TrackItem
 import com.neurobeat.neurobeats.artist.view.ArtistsDialog
 import com.neurobeat.neurobeats.artist.viewmodel.AllArtistsViewModel
 import com.neurobeat.neurobeats.artist.viewmodel.ArtistLibraryViewModel
@@ -58,6 +64,7 @@ import com.neurobeat.neurobeats.ui.theme.BackgroundColor
 import com.neurobeat.neurobeats.ui.theme.txtColor
 import kotlinx.coroutines.delay
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun MusicPlayerScreen(
     navController: NavController,
@@ -75,17 +82,14 @@ fun MusicPlayerScreen(
     val playlistTracks by playlistViewModel.tracks.observeAsState(emptyList())
     val artistTracks by artistLibraryViewModel.tracks.observeAsState(emptyList())
 
-    val playlistTrack = playlistTracks.find { trackItem -> trackItem.track.id == trackId }
-    val artistTrack = artistTracks.find { trackItem -> trackItem.id == trackId }
+    var currentTrackIndex by remember { mutableIntStateOf(getTrackIndex(trackId, playlistTracks, artistTracks)) }
+    val track = getTrack(currentTrackIndex, playlistTracks, artistTracks)
 
-    val preview_url = playlistTrack?.track?.preview_url ?: artistTrack?.preview_url ?: ""
-    val artists = playlistTrack?.track?.artists?.joinToString(", ") { it.name } ?: artistTrack?.artists?.joinToString(", ") { it.name } ?: ""
-    val albumName = playlistTrack?.track?.album?.name ?: artistTrack?.album?.name ?: ""
-    val albumImage = playlistTrack?.track?.album?.images?.firstOrNull()?.url ?: artistTrack?.album?.images?.firstOrNull()?.url ?: ""
-    val trackName = playlistTrack?.track?.name ?: artistTrack?.name ?: ""
-
-//    Log.d("MusicPlayerScreen: ct1", playlistTrack.toString())
-//    Log.d("MusicPlayerScreen: ct2", artistTrack.toString())
+    val preview_url = track?.preview_url ?: ""
+    val artists = track?.artists?.joinToString(", ") { it.name } ?: ""
+    val albumName = track?.album?.name ?: ""
+    val albumImage = track?.album?.images?.firstOrNull()?.url ?: ""
+    val trackName = track?.name ?: ""
 
     // Remember ExoPlayer instance
     val player = remember {
@@ -101,6 +105,14 @@ fun MusicPlayerScreen(
 
     // Manage ExoPlayer lifecycle
     DisposableEffect(Unit) {
+        val listener = object : Player.Listener {
+            override fun onPlaybackStateChanged(state: Int) {
+                if (state == Player.STATE_ENDED) {
+                    isPlaying = false
+                }
+            }
+        }
+        player.addListener(listener)
         onDispose {
             player.release()
         }
@@ -140,7 +152,7 @@ fun MusicPlayerScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(text = "Playing from the album", color = txtColor, fontSize = 16.sp)
-                Text(text = albumName, color = txtColor, fontSize = 14.sp)
+                Text(text = albumName, color = txtColor, fontSize = 14.sp, modifier = Modifier.basicMarquee())
             }
             Icon(imageVector = Icons.Default.MoreVert, contentDescription = "More Options", modifier = Modifier.size(35.dp), tint = txtColor)
         }
@@ -153,13 +165,13 @@ fun MusicPlayerScreen(
                 .size(320.dp)
                 .clip(RoundedCornerShape(20.dp))
         )
-        Spacer(modifier = Modifier.height(80.dp))
+        Spacer(modifier = Modifier.height(100.dp))
         Column(
             modifier = Modifier.padding(horizontal = 30.dp)
         ) {
-            Text(text = trackName, color = txtColor, modifier = Modifier.fillMaxWidth())
+            Text(text = trackName, color = txtColor, modifier = Modifier.fillMaxWidth().basicMarquee())
             Text(text = artists, color = txtColor, fontSize = 16.sp,
-                modifier = Modifier.clickable { showDialog = true }
+                modifier = Modifier.clickable { showDialog = true }.basicMarquee()
             )
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -199,8 +211,14 @@ fun MusicPlayerScreen(
                     }
                     isPlaying = !isPlaying
                 },
-                onNextClicked = {},
-                onPreviousClicked = {}
+                onNextClicked = {
+                    currentTrackIndex = getNextTrackIndex(currentTrackIndex, playlistTracks, artistTracks)
+                    currentPosition = updatePlayer(player, getTrack(currentTrackIndex, playlistTracks, artistTracks)?.preview_url)
+                },
+                onPreviousClicked = {
+                    currentTrackIndex = getPreviousTrackIndex(currentTrackIndex, playlistTracks, artistTracks)
+                    currentPosition = updatePlayer(player, getTrack(currentTrackIndex, playlistTracks, artistTracks)?.preview_url)
+                }
             )
         }
     }
@@ -290,4 +308,36 @@ fun formatTime(timeMs: Float): String {
     val minutes = totalSeconds / 60
     val seconds = totalSeconds % 60
     return String.format("%02d:%02d", minutes, seconds)
+}
+
+fun getTrackIndex(trackId: String, playlistTracks: List<TrackItem>, artistTracks: List<Track>): Int {
+    return playlistTracks.indexOfFirst { it.track.id == trackId }.takeIf { it != -1 }
+        ?: artistTracks.indexOfFirst { it.id == trackId }
+}
+
+fun getTrack(index: Int, playlistTracks: List<TrackItem>, artistTracks: List<Track>): Track? {
+    return when (index) {
+        in playlistTracks.indices -> playlistTracks[index].track
+        in artistTracks.indices -> artistTracks[index]
+        else -> null
+    }
+}
+
+fun getNextTrackIndex(currentIndex: Int, playlistTracks: List<TrackItem>, artistTracks: List<Track>): Int {
+    val totalTracks = playlistTracks.size + artistTracks.size
+    return (currentIndex + 1) % totalTracks
+}
+
+fun getPreviousTrackIndex(currentIndex: Int, playlistTracks: List<TrackItem>, artistTracks: List<Track>): Int {
+    val totalTracks = playlistTracks.size + artistTracks.size
+    return (currentIndex - 1 + totalTracks) % totalTracks
+}
+
+fun updatePlayer(player: ExoPlayer, previewUrl: String?): Float {
+    previewUrl?.let {
+        val mediaItem = MediaItem.fromUri(Uri.parse(previewUrl))
+        player.setMediaItem(mediaItem)
+        player.prepare()
+    }
+    return 0f
 }
