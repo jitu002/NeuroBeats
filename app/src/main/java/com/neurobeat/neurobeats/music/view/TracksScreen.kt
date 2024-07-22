@@ -86,20 +86,10 @@ fun TracksScreen(
 
             items(tracks) { trackItem ->
                 TrackItemView(track = trackItem.track) {
-                    val previewUrl = trackItem.track.preview_url ?: return@TrackItemView
-                    val encodedPreviewUrl = URLEncoder.encode(previewUrl, StandardCharsets.UTF_8.toString())
-                    val encodedTrackName = URLEncoder.encode(trackItem.track.name, StandardCharsets.UTF_8.toString())
-                    val encodedAlbumName = URLEncoder.encode(trackItem.track.album.name, StandardCharsets.UTF_8.toString())
-                    val albumImageUrl = trackItem.track.album.images.first().url
-                    val encodedAlbumImageUrl = URLEncoder.encode(albumImageUrl, StandardCharsets.UTF_8.toString())
-                    val artists = trackItem.track.artists.joinToString(", ") { it.name }
-                    val encodedArtists = URLEncoder.encode(artists, StandardCharsets.UTF_8.toString())
                     val artistsIds = trackItem.track.artists.joinToString(",") { it.id }
-                    val encodedArtistsIds = URLEncoder.encode(artistsIds, StandardCharsets.UTF_8.toString())
-                    val duration = trackItem.track.duration_ms.toString()
-                    val encodedDuration = URLEncoder.encode(duration, StandardCharsets.UTF_8.toString())
+                    val trackId = trackItem.track.id
 
-                    navController.navigate("MusicPlayer/$accessToken/$encodedPreviewUrl/$encodedTrackName/$encodedAlbumName/$encodedAlbumImageUrl/$encodedArtists/$encodedDuration/$encodedArtistsIds")
+                    navController.navigate("MusicPlayer/$accessToken/$trackId/$artistsIds")
                     Log.d("TrackItem", trackItem.track.album.images.first().url)
                 }
             }

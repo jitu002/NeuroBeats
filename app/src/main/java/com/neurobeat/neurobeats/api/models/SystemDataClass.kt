@@ -80,27 +80,5 @@ data class Followers(
 // Top-Track data classes
 
 data class TopTracksResponse(
-    val tracks: List<TopTrack>
-)
-
-data class TopTrack(
-    val name: String,
-    val preview_url: String?,
-    val album: TopAlbum,
-    val artists: List<TopArtist>,
-    val duration_ms: Long
-)
-
-data class TopAlbum(
-    val name: String,
-    val images: List<TopImage>
-)
-
-data class TopArtist(
-    val name: String,
-    val id: String
-)
-
-data class TopImage(
-    val url: String
+    val tracks: List<Track>
 )

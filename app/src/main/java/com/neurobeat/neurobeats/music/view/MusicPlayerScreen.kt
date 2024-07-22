@@ -5,17 +5,39 @@ import android.net.Uri
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.ChevronLeft
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Pause
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.SkipNext
+import androidx.compose.material.icons.filled.SkipPrevious
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -30,42 +52,45 @@ import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.neurobeat.neurobeats.artist.view.ArtistsDialog
 import com.neurobeat.neurobeats.artist.viewmodel.AllArtistsViewModel
+import com.neurobeat.neurobeats.artist.viewmodel.ArtistLibraryViewModel
+import com.neurobeat.neurobeats.music.viewmodels.PlaylistViewModel
 import com.neurobeat.neurobeats.ui.theme.BackgroundColor
 import com.neurobeat.neurobeats.ui.theme.txtColor
 import kotlinx.coroutines.delay
-import java.net.URLDecoder
-import java.nio.charset.StandardCharsets
 
 @Composable
 fun MusicPlayerScreen(
     navController: NavController,
     viewModel: AllArtistsViewModel,
+    playlistViewModel: PlaylistViewModel,
     accessToken: String,
-    trackName: String,
-    albumName: String,
-    albumImage: String,
-    artists: String,
-    preview_url: String?,
-    duration_ms: String,
-    artistIds: String
+    trackId: String,
+    artistIds: String,
+    artistLibraryViewModel: ArtistLibraryViewModel
 ) {
-    val decodedTrackName = URLDecoder.decode(trackName, StandardCharsets.UTF_8.toString())
-    val decodedAlbumName = URLDecoder.decode(albumName, StandardCharsets.UTF_8.toString())
-    val decodedAlbumImage = URLDecoder.decode(albumImage, StandardCharsets.UTF_8.toString())
-    val decodedArtists = URLDecoder.decode(artists, StandardCharsets.UTF_8.toString())
-    val decodedArtistsIds = URLDecoder.decode(artistIds, StandardCharsets.UTF_8.toString())
-    val decodedPreviewUrl = URLDecoder.decode(preview_url, StandardCharsets.UTF_8.toString())
-//    val decodedDuration = URLDecoder.decode(duration_ms, StandardCharsets.UTF_8.toString()).toFloat()
-
     // preview_url has max 29 sec
     val decodedDuration = 29000f
 
     val context = LocalContext.current
+    val playlistTracks by playlistViewModel.tracks.observeAsState(emptyList())
+    val artistTracks by artistLibraryViewModel.tracks.observeAsState(emptyList())
+
+    val playlistTrack = playlistTracks.find { trackItem -> trackItem.track.id == trackId }
+    val artistTrack = artistTracks.find { trackItem -> trackItem.id == trackId }
+
+    val preview_url = playlistTrack?.track?.preview_url ?: artistTrack?.preview_url ?: ""
+    val artists = playlistTrack?.track?.artists?.joinToString(", ") { it.name } ?: artistTrack?.artists?.joinToString(", ") { it.name } ?: ""
+    val albumName = playlistTrack?.track?.album?.name ?: artistTrack?.album?.name ?: ""
+    val albumImage = playlistTrack?.track?.album?.images?.firstOrNull()?.url ?: artistTrack?.album?.images?.firstOrNull()?.url ?: ""
+    val trackName = playlistTrack?.track?.name ?: artistTrack?.name ?: ""
+
+//    Log.d("MusicPlayerScreen: ct1", playlistTrack.toString())
+//    Log.d("MusicPlayerScreen: ct2", artistTrack.toString())
 
     // Remember ExoPlayer instance
     val player = remember {
         ExoPlayer.Builder(context).build().apply {
-            val mediaItem = MediaItem.fromUri(Uri.parse(decodedPreviewUrl))
+            val mediaItem = MediaItem.fromUri(Uri.parse(preview_url))
             setMediaItem(mediaItem)
             prepare()
         }
@@ -115,13 +140,13 @@ fun MusicPlayerScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(text = "Playing from the album", color = txtColor, fontSize = 16.sp)
-                Text(text = decodedAlbumName, color = txtColor, fontSize = 14.sp)
+                Text(text = albumName, color = txtColor, fontSize = 14.sp)
             }
             Icon(imageVector = Icons.Default.MoreVert, contentDescription = "More Options", modifier = Modifier.size(35.dp), tint = txtColor)
         }
         Spacer(modifier = Modifier.height(30.dp))
         Image(
-            painter = rememberAsyncImagePainter(model = decodedAlbumImage),
+            painter = rememberAsyncImagePainter(model = albumImage),
             contentDescription = "Track image",
             contentScale = ContentScale.Crop,
             modifier = Modifier
@@ -132,8 +157,8 @@ fun MusicPlayerScreen(
         Column(
             modifier = Modifier.padding(horizontal = 30.dp)
         ) {
-            Text(text = decodedTrackName, color = txtColor, modifier = Modifier.fillMaxWidth())
-            Text(text = decodedArtists, color = txtColor, fontSize = 16.sp,
+            Text(text = trackName, color = txtColor, modifier = Modifier.fillMaxWidth())
+            Text(text = artists, color = txtColor, fontSize = 16.sp,
                 modifier = Modifier.clickable { showDialog = true }
             )
             Spacer(modifier = Modifier.height(16.dp))
@@ -185,7 +210,7 @@ fun MusicPlayerScreen(
             navController = navController,
             viewModel = viewModel,
             accessToken = accessToken,
-            artistIds = decodedArtistsIds,
+            artistIds = artistIds,
             onDismissRequest = { showDialog = false }
         )
     }

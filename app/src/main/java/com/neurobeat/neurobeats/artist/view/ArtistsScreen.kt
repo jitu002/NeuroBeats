@@ -16,7 +16,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
 import com.neurobeat.neurobeats.api.models.ArtistResponse
-import com.neurobeat.neurobeats.ui.theme.txtColor
 
 @Composable
 fun ArtistItemView(artist: ArtistResponse, onClick: () -> Unit) {

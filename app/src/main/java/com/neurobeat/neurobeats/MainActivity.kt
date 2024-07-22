@@ -47,7 +47,7 @@ class MainActivity : ComponentActivity() {
 
     private fun handleRedirectUri(uri: Uri) {
         // Extract the authorization code or token from the URI
-        val code = uri.getQueryParameter("code")
+        uri.getQueryParameter("code")
     }
 }
 
@@ -73,17 +73,14 @@ fun AppNavigation(
                 accessToken = backStackEntry.arguments?.getString("token") ?: ""
             )
         }
-        composable("MusicPlayer/{token}/{preview_url}/{trackName}/{albumName}/{albumImage}/{artists}/{duration_ms}/{artistsIds}") { backStackEntry ->
+        composable("MusicPlayer/{token}/{trackId}/{artistsIds}") { backStackEntry ->
             MusicPlayerScreen(
                 navController = navController,
                 viewModel = allArtistViewModel,
+                playlistViewModel = playlistViewModel,
+                artistLibraryViewModel = artistLibraryViewModel,
                 accessToken = backStackEntry.arguments?.getString("token") ?: "",
-                preview_url = backStackEntry.arguments?.getString("preview_url") ?: "",
-                trackName = backStackEntry.arguments?.getString("trackName") ?: "",
-                albumName = backStackEntry.arguments?.getString("albumName") ?: "",
-                albumImage = backStackEntry.arguments?.getString("albumImage") ?: "",
-                artists = backStackEntry.arguments?.getString("artists") ?: "",
-                duration_ms = backStackEntry.arguments?.getString("duration_ms") ?: "",
+                trackId = backStackEntry.arguments?.getString("trackId") ?: "",
                 artistIds = backStackEntry.arguments?.getString("artistsIds") ?: ""
             )
         }

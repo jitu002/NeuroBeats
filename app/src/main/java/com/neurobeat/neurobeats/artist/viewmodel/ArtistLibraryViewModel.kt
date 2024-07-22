@@ -5,13 +5,13 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.neurobeat.neurobeats.api.models.TopTrack
+import com.neurobeat.neurobeats.api.models.Track
 import com.neurobeat.neurobeats.pages.RetrofitInstance
 import kotlinx.coroutines.launch
 
 class ArtistLibraryViewModel : ViewModel() {
-    private val _tracks = MutableLiveData<List<TopTrack>>()
-    val tracks: LiveData<List<TopTrack>> get() = _tracks
+    private val _tracks = MutableLiveData<List<Track>>()
+    val tracks: LiveData<List<Track>> get() = _tracks
 
     fun fetchArtistTracks(token: String, artistId: String) {
         viewModelScope.launch {
