@@ -51,6 +51,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
+import androidx.media3.common.util.Log
+import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
@@ -73,7 +75,8 @@ fun MusicPlayerScreen(
     accessToken: String,
     trackId: String,
     artistIds: String,
-    artistLibraryViewModel: ArtistLibraryViewModel
+    artistLibraryViewModel: ArtistLibraryViewModel,
+    fromArtist: String
 ) {
     // preview_url has max 29 sec
     val decodedDuration = 29000f
@@ -82,10 +85,10 @@ fun MusicPlayerScreen(
     val playlistTracks by playlistViewModel.tracks.observeAsState(emptyList())
     val artistTracks by artistLibraryViewModel.tracks.observeAsState(emptyList())
 
-    var currentTrackIndex by remember { mutableIntStateOf(getTrackIndex(trackId, playlistTracks, artistTracks)) }
-    val track = getTrack(currentTrackIndex, playlistTracks, artistTracks)
+    var currentTrackIndex by remember { mutableIntStateOf(getTrackIndex(trackId, playlistTracks, artistTracks, fromArtist)) }
+    val track = getTrack(currentTrackIndex, playlistTracks, artistTracks, fromArtist)
 
-    val preview_url = track?.preview_url ?: ""
+    val previewUrl = track?.preview_url ?: ""
     val artists = track?.artists?.joinToString(", ") { it.name } ?: ""
     val albumName = track?.album?.name ?: ""
     val albumImage = track?.album?.images?.firstOrNull()?.url ?: ""
@@ -94,13 +97,14 @@ fun MusicPlayerScreen(
     // Remember ExoPlayer instance
     val player = remember {
         ExoPlayer.Builder(context).build().apply {
-            val mediaItem = MediaItem.fromUri(Uri.parse(preview_url))
+            val mediaItem = MediaItem.fromUri(Uri.parse(previewUrl))
             setMediaItem(mediaItem)
             prepare()
+            play()
         }
     }
 
-    var isPlaying by remember { mutableStateOf(false) }
+    var isPlaying by remember { mutableStateOf(true) }
     var currentPosition by remember { mutableFloatStateOf(0f) }
 
     // Manage ExoPlayer lifecycle
@@ -108,7 +112,14 @@ fun MusicPlayerScreen(
         val listener = object : Player.Listener {
             override fun onPlaybackStateChanged(state: Int) {
                 if (state == Player.STATE_ENDED) {
-                    isPlaying = false
+                    currentTrackIndex = getNextTrackIndex(currentTrackIndex, playlistTracks, artistTracks, fromArtist)
+                    currentPosition = updatePlayer(player, getTrack(
+                        currentTrackIndex,
+                        playlistTracks,
+                        artistTracks,
+                        fromArtist
+                    )?.preview_url)
+                    isPlaying = true
                 }
             }
         }
@@ -169,9 +180,13 @@ fun MusicPlayerScreen(
         Column(
             modifier = Modifier.padding(horizontal = 30.dp)
         ) {
-            Text(text = trackName, color = txtColor, modifier = Modifier.fillMaxWidth().basicMarquee())
+            Text(text = trackName, color = txtColor, modifier = Modifier
+                .fillMaxWidth()
+                .basicMarquee())
             Text(text = artists, color = txtColor, fontSize = 16.sp,
-                modifier = Modifier.clickable { showDialog = true }.basicMarquee()
+                modifier = Modifier
+                    .clickable { showDialog = true }
+                    .basicMarquee()
             )
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -212,12 +227,29 @@ fun MusicPlayerScreen(
                     isPlaying = !isPlaying
                 },
                 onNextClicked = {
-                    currentTrackIndex = getNextTrackIndex(currentTrackIndex, playlistTracks, artistTracks)
-                    currentPosition = updatePlayer(player, getTrack(currentTrackIndex, playlistTracks, artistTracks)?.preview_url)
+                    currentTrackIndex = getNextTrackIndex(
+                        currentTrackIndex,
+                        playlistTracks,
+                        artistTracks,
+                        fromArtist
+                    )
+                    currentPosition = updatePlayer(player, getTrack(
+                        currentTrackIndex,
+                        playlistTracks,
+                        artistTracks,
+                        fromArtist
+                    )?.preview_url)
+                    isPlaying = true
                 },
                 onPreviousClicked = {
-                    currentTrackIndex = getPreviousTrackIndex(currentTrackIndex, playlistTracks, artistTracks)
-                    currentPosition = updatePlayer(player, getTrack(currentTrackIndex, playlistTracks, artistTracks)?.preview_url)
+                    currentTrackIndex = getPreviousTrackIndex(currentTrackIndex, playlistTracks, artistTracks, fromArtist)
+                    currentPosition = updatePlayer(player, getTrack(
+                        currentTrackIndex,
+                        playlistTracks,
+                        artistTracks,
+                        fromArtist
+                    )?.preview_url)
+                    isPlaying = true
                 }
             )
         }
@@ -260,14 +292,14 @@ fun PlaybackControls(
             modifier = Modifier
                 .size(64.dp)
                 .clip(CircleShape)
-                .background(Color.DarkGray)
+                .background(Color.White)
                 .padding(8.dp)
         ) {
             Icon(
                 imageVector = if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
                 contentDescription = "Play/Pause",
-                tint = Color.White,
-                modifier = Modifier.size(48.dp)  // Adjust icon size if needed
+                tint = Color(0xFF030718),
+                modifier = Modifier.size(48.dp)
             )
         }
 
@@ -310,27 +342,64 @@ fun formatTime(timeMs: Float): String {
     return String.format("%02d:%02d", minutes, seconds)
 }
 
-fun getTrackIndex(trackId: String, playlistTracks: List<TrackItem>, artistTracks: List<Track>): Int {
-    return playlistTracks.indexOfFirst { it.track.id == trackId }.takeIf { it != -1 }
-        ?: artistTracks.indexOfFirst { it.id == trackId }
-}
-
-fun getTrack(index: Int, playlistTracks: List<TrackItem>, artistTracks: List<Track>): Track? {
-    return when (index) {
-        in playlistTracks.indices -> playlistTracks[index].track
-        in artistTracks.indices -> artistTracks[index]
-        else -> null
+@androidx.annotation.OptIn(UnstableApi::class)
+fun getTrackIndex(
+    trackId: String,
+    playlistTracks: List<TrackItem>,
+    artistTracks: List<Track>,
+    fromArtist: String
+): Int {
+    Log.d("MusicPlayerScreen", fromArtist)
+    return if (fromArtist == "true") {
+        artistTracks.indexOfFirst { it.id == trackId }.takeIf { it != -1 } ?: 0
+    } else {
+        playlistTracks.indexOfFirst { it.track.id == trackId }.takeIf { it != -1 } ?: 0
     }
 }
 
-fun getNextTrackIndex(currentIndex: Int, playlistTracks: List<TrackItem>, artistTracks: List<Track>): Int {
-    val totalTracks = playlistTracks.size + artistTracks.size
-    return (currentIndex + 1) % totalTracks
+@androidx.annotation.OptIn(UnstableApi::class)
+fun getTrack(
+    index: Int,
+    playlistTracks: List<TrackItem>,
+    artistTracks: List<Track>,
+    fromArtist: String
+): Track? {
+    Log.d("MusicPlayerScreen", fromArtist)
+    return if (fromArtist == "true") {
+        artistTracks.getOrNull(index)
+    } else {
+        playlistTracks.getOrNull(index)?.track
+    }
 }
 
-fun getPreviousTrackIndex(currentIndex: Int, playlistTracks: List<TrackItem>, artistTracks: List<Track>): Int {
-    val totalTracks = playlistTracks.size + artistTracks.size
-    return (currentIndex - 1 + totalTracks) % totalTracks
+@androidx.annotation.OptIn(UnstableApi::class)
+fun getNextTrackIndex(
+    currentIndex: Int,
+    playlistTracks: List<TrackItem>,
+    artistTracks: List<Track>,
+    fromArtist: String
+): Int {
+    Log.d("MusicPlayerScreen", fromArtist)
+    return if (fromArtist == "true") {
+        (currentIndex + 1) % artistTracks.size
+    } else {
+        (currentIndex + 1) % playlistTracks.size
+    }
+}
+
+@androidx.annotation.OptIn(UnstableApi::class)
+fun getPreviousTrackIndex(
+    currentIndex: Int,
+    playlistTracks: List<TrackItem>,
+    artistTracks: List<Track>,
+    fromArtist: String
+): Int {
+    Log.d("MusicPlayerScreen", fromArtist)
+    return if (fromArtist == "true") {
+        (currentIndex - 1) % artistTracks.size
+    } else {
+        (currentIndex - 1) % playlistTracks.size
+    }
 }
 
 fun updatePlayer(player: ExoPlayer, previewUrl: String?): Float {
@@ -338,6 +407,7 @@ fun updatePlayer(player: ExoPlayer, previewUrl: String?): Float {
         val mediaItem = MediaItem.fromUri(Uri.parse(previewUrl))
         player.setMediaItem(mediaItem)
         player.prepare()
+        player.play()
     }
     return 0f
 }
