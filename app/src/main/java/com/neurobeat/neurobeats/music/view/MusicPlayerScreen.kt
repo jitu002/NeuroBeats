@@ -24,6 +24,8 @@ import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Repeat
+import androidx.compose.material.icons.filled.Shuffle
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.SkipPrevious
 import androidx.compose.material3.Icon
@@ -66,6 +68,7 @@ import com.neurobeat.neurobeats.ui.theme.BackgroundColor
 import com.neurobeat.neurobeats.ui.theme.txtColor
 import kotlinx.coroutines.delay
 
+@androidx.annotation.OptIn(UnstableApi::class)
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun MusicPlayerScreen(
@@ -78,9 +81,7 @@ fun MusicPlayerScreen(
     artistLibraryViewModel: ArtistLibraryViewModel,
     fromArtist: String
 ) {
-    // preview_url has max 29 sec
     val decodedDuration = 29000f
-
     val context = LocalContext.current
     val playlistTracks by playlistViewModel.tracks.observeAsState(emptyList())
     val artistTracks by artistLibraryViewModel.tracks.observeAsState(emptyList())
@@ -94,7 +95,6 @@ fun MusicPlayerScreen(
     val albumImage = track?.album?.images?.firstOrNull()?.url ?: ""
     val trackName = track?.name ?: ""
 
-    // Remember ExoPlayer instance
     val player = remember {
         ExoPlayer.Builder(context).build().apply {
             val mediaItem = MediaItem.fromUri(Uri.parse(previewUrl))
@@ -105,14 +105,19 @@ fun MusicPlayerScreen(
     }
 
     var isPlaying by remember { mutableStateOf(true) }
+    var isRepeating by remember { mutableStateOf(false) }
+    var isShuffling by remember { mutableStateOf(false) }
     var currentPosition by remember { mutableFloatStateOf(0f) }
 
-    // Manage ExoPlayer lifecycle
     DisposableEffect(Unit) {
         val listener = object : Player.Listener {
             override fun onPlaybackStateChanged(state: Int) {
                 if (state == Player.STATE_ENDED) {
-                    currentTrackIndex = getNextTrackIndex(currentTrackIndex, playlistTracks, artistTracks, fromArtist)
+                    currentTrackIndex = if (isShuffling) {
+                        getRandomTrackIndex(currentTrackIndex, playlistTracks, artistTracks, fromArtist)
+                    } else {
+                        getNextTrackIndex(currentTrackIndex, playlistTracks, artistTracks, fromArtist)
+                    }
                     currentPosition = updatePlayer(player, getTrack(
                         currentTrackIndex,
                         playlistTracks,
@@ -129,12 +134,9 @@ fun MusicPlayerScreen(
         }
     }
 
-    // Update current position
-    LaunchedEffect(player, isPlaying) {
-        while (true) {
-            if (isPlaying) {
-                currentPosition = player.currentPosition.toFloat()
-            }
+    LaunchedEffect(isPlaying) {
+        while (isPlaying) {
+            currentPosition = player.currentPosition.toFloat()
             delay(1000L)
         }
     }
@@ -218,6 +220,8 @@ fun MusicPlayerScreen(
 
             PlaybackControls(
                 isPlaying = isPlaying,
+                isRepeating = isRepeating,
+                isShuffling = isShuffling,
                 onPlayPauseClicked = {
                     if (isPlaying) {
                         player.pause()
@@ -240,6 +244,8 @@ fun MusicPlayerScreen(
                         fromArtist
                     )?.preview_url)
                     isPlaying = true
+                    isRepeating = false
+                    isShuffling = false
                 },
                 onPreviousClicked = {
                     currentTrackIndex = getPreviousTrackIndex(currentTrackIndex, playlistTracks, artistTracks, fromArtist)
@@ -250,6 +256,17 @@ fun MusicPlayerScreen(
                         fromArtist
                     )?.preview_url)
                     isPlaying = true
+                    isRepeating = false
+                    isShuffling = false
+                },
+                onRepeatClicked = {
+                    isRepeating = !isRepeating
+                    isShuffling = false
+                    player.repeatMode = if (isRepeating) Player.REPEAT_MODE_ONE else Player.REPEAT_MODE_OFF
+                },
+                onShuffleClicked = {
+                    isShuffling = !isShuffling
+                    isRepeating = false
                 }
             )
         }
@@ -269,15 +286,28 @@ fun MusicPlayerScreen(
 @Composable
 fun PlaybackControls(
     isPlaying: Boolean,
+    isRepeating: Boolean,
+    isShuffling: Boolean,
     onPlayPauseClicked: () -> Unit,
     onNextClicked: () -> Unit,
-    onPreviousClicked: () -> Unit
+    onPreviousClicked: () -> Unit,
+    onRepeatClicked: () -> Unit,
+    onShuffleClicked: () -> Unit
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceEvenly,
         modifier = Modifier.fillMaxWidth()
     ) {
+        IconButton(onClick = onShuffleClicked) {
+            Icon(
+                imageVector = Icons.Default.Shuffle,
+                contentDescription = "Shuffle",
+                tint = if (isShuffling) Color.Magenta else Color.White,
+                modifier = Modifier.size(32.dp)
+            )
+        }
+        Spacer(modifier = Modifier.width(5.dp))
         IconButton(onClick = onPreviousClicked) {
             Icon(
                 imageVector = Icons.Default.SkipPrevious,
@@ -286,7 +316,6 @@ fun PlaybackControls(
                 modifier = Modifier.size(45.dp)
             )
         }
-
         IconButton(
             onClick = onPlayPauseClicked,
             modifier = Modifier
@@ -302,13 +331,21 @@ fun PlaybackControls(
                 modifier = Modifier.size(48.dp)
             )
         }
-
         IconButton(onClick = onNextClicked) {
             Icon(
                 imageVector = Icons.Default.SkipNext,
                 contentDescription = "Next",
                 tint = Color.White,
                 modifier = Modifier.size(45.dp)
+            )
+        }
+        Spacer(modifier = Modifier.width(3.dp))
+        IconButton(onClick = onRepeatClicked) {
+            Icon(
+                imageVector = Icons.Default.Repeat,
+                contentDescription = "Repeat",
+                tint = if (isRepeating) Color.Magenta else Color.White,
+                modifier = Modifier.size(32.dp)
             )
         }
     }
@@ -396,9 +433,22 @@ fun getPreviousTrackIndex(
 ): Int {
     Log.d("MusicPlayerScreen", fromArtist)
     return if (fromArtist == "true") {
-        (currentIndex - 1) % artistTracks.size
+        (currentIndex - 1 + artistTracks.size) % artistTracks.size
     } else {
-        (currentIndex - 1) % playlistTracks.size
+        (currentIndex - 1 + playlistTracks.size) % playlistTracks.size
+    }
+}
+
+fun getRandomTrackIndex(
+    currentIndex: Int,
+    playlistTracks: List<TrackItem>,
+    artistTracks: List<Track>,
+    fromArtist: String
+): Int {
+    return if (fromArtist == "true") {
+        artistTracks.indices.filter { it != currentIndex }.random()
+    } else {
+        playlistTracks.indices.filter { it != currentIndex }.random()
     }
 }
 
