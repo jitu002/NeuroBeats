@@ -1,10 +1,6 @@
-package com.neurobeat.neurobeats.pages
+package com.neurobeat.neurobeats.pages.viewmodel
 
 import android.util.Log
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import com.neurobeat.neurobeats.api.models.Category
 import com.neurobeat.neurobeats.api.models.Playlist

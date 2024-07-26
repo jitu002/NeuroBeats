@@ -1,4 +1,4 @@
-package com.neurobeat.neurobeats.pages
+package com.neurobeat.neurobeats.pages.view
 
 import android.util.Log
 import androidx.compose.foundation.Image
@@ -72,6 +72,7 @@ import com.neurobeat.neurobeats.api.models.Playlist
 import com.neurobeat.neurobeats.authentication.SpotifyAuth
 import com.neurobeat.neurobeats.authentication.viewmodel.AuthenticationState
 import com.neurobeat.neurobeats.authentication.viewmodel.AuthenticationViewModel
+import com.neurobeat.neurobeats.pages.viewmodel.CategoriesViewModel
 import com.neurobeat.neurobeats.ui.theme.BackgroundColor
 import com.neurobeat.neurobeats.ui.theme.BarColor
 import com.neurobeat.neurobeats.ui.theme.profileColor
@@ -84,7 +85,7 @@ import java.nio.charset.StandardCharsets
 @Composable
 fun HomePage(navController: NavController) {
 
-    val categoriesViewModel:CategoriesViewModel = viewModel()
+    val categoriesViewModel: CategoriesViewModel = viewModel()
 
     val categoryPlaylistsMap by categoriesViewModel.categoryPlaylistsMap.collectAsState()
     val authenticationViewModel: AuthenticationViewModel= viewModel()

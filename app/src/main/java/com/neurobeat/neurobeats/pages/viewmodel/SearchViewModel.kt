@@ -1,4 +1,4 @@
-package com.neurobeat.neurobeats.pages
+package com.neurobeat.neurobeats.pages.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

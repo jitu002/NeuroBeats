@@ -1,4 +1,4 @@
-package com.neurobeat.neurobeats.pages
+package com.neurobeat.neurobeats.pages.view
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronLeft
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -25,6 +24,7 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -43,13 +43,12 @@ import com.neurobeat.neurobeats.ui.theme.BackgroundColor
 import com.neurobeat.neurobeats.ui.theme.profileColor
 import com.neurobeat.neurobeats.ui.theme.txtColor
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Profile(navController: NavController){
 
     val dboperation= DatabaseOperation()
     var username by remember { mutableStateOf("") }
-    var age by remember { mutableStateOf(0) }
+    var age by remember { mutableIntStateOf(0) }
     var email by remember { mutableStateOf("") }
     var profileTxt by remember { mutableStateOf("") }
     var readOnly by remember { mutableStateOf(true) }

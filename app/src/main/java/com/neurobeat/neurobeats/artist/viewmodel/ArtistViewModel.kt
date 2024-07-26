@@ -6,7 +6,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.neurobeat.neurobeats.api.models.ArtistResponse
-import com.neurobeat.neurobeats.pages.RetrofitInstance
+import com.neurobeat.neurobeats.authentication.RetrofitInstance
 import kotlinx.coroutines.launch
 
 class ArtistViewModel: ViewModel() {

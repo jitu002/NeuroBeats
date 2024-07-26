@@ -20,8 +20,8 @@ import com.neurobeat.neurobeats.authentication.view.SignupScreen
 import com.neurobeat.neurobeats.music.view.MusicPlayerScreen
 import com.neurobeat.neurobeats.music.view.TracksScreen
 import com.neurobeat.neurobeats.music.viewmodels.PlaylistViewModel
-import com.neurobeat.neurobeats.pages.HomePage
-import com.neurobeat.neurobeats.pages.Profile
+import com.neurobeat.neurobeats.pages.view.HomePage
+import com.neurobeat.neurobeats.pages.view.Profile
 import com.neurobeat.neurobeats.ui.theme.NeuroBeatsTheme
 
 class MainActivity : ComponentActivity() {
@@ -94,6 +94,6 @@ fun AppNavigation(
                 playlistImage = backStackEntry.arguments?.getString("playlistImage") ?: ""
             )
         }
-        composable("Profile"){Profile(navController)}
+        composable("Profile"){ Profile(navController) }
     }
 }

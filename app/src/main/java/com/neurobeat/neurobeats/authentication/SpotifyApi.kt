@@ -1,9 +1,11 @@
 package com.neurobeat.neurobeats.authentication
 
+import com.neurobeat.neurobeats.api.models.ArtistList
+import com.neurobeat.neurobeats.api.models.ArtistResponse
 import com.neurobeat.neurobeats.api.models.CategoriesResponse
 import com.neurobeat.neurobeats.api.models.PlaylistResponse
 import com.neurobeat.neurobeats.api.models.SpotifySearchResponse
-import com.neurobeat.neurobeats.api.models.TrackItem
+import com.neurobeat.neurobeats.api.models.TopTracksResponse
 import com.neurobeat.neurobeats.api.models.TracksResponse
 import retrofit2.http.GET
 import retrofit2.http.Header
@@ -28,6 +30,24 @@ interface SpotifyApi {
         @Header("Authorization") token: String,
         @Path("playlist_id") playlistId: String
     ): TracksResponse
+    @GET("artists")
+    suspend fun getArtists(
+        @Header("Authorization") token: String,
+        @Query("ids") ids: String
+    ): ArtistList
+
+    @GET("artists/{id}/top-tracks")
+    suspend fun getArtistTracks(
+        @Header("Authorization") token: String,
+        @Path("id") artistId: String,
+        @Query("market") market: String = "IN"
+    ): TopTracksResponse
+
+    @GET("artists/{id}")
+    suspend fun getArtist(
+        @Header("Authorization") token: String,
+        @Path("id") artistId: String
+    ): ArtistResponse
 
     @GET("search?")
     suspend fun search(
