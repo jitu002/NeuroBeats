@@ -161,8 +161,8 @@ fun HomePage(navController: NavController) {
                 }
                 TextButton(
                     onClick = {
-                    authenticationViewModel.signOut()
-                },
+                        authenticationViewModel.signOut()
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .width(200.dp)
@@ -194,17 +194,17 @@ fun HomePage(navController: NavController) {
                         )
                     },
                     navigationIcon = {
-                            IconButton(
-                                onClick = {
-                                    scope.launch {
-                                        drawerState.open()
-                                    }
-                                }) {
-                                Icon(
-                                    imageVector = Icons.Filled.Menu,
-                                    contentDescription = "Menu Icon"
-                                )
-                            }
+                        IconButton(
+                            onClick = {
+                                scope.launch {
+                                    drawerState.open()
+                                }
+                            }) {
+                            Icon(
+                                imageVector = Icons.Filled.Menu,
+                                contentDescription = "Menu Icon"
+                            )
+                        }
                     },
 
                     scrollBehavior = topScrollBehavior,
@@ -301,20 +301,20 @@ fun CategoryPlaylistsList(
                             .fillMaxSize()
                             .height(200.dp)
                     ) {
-                      if(playlists.isNotEmpty()){
-                          items(playlists) { playlist ->
-                              PlaylistItem(playlist, navController, accessToken)
-                          }
-                      }
-                      else{
-                          item {
-                              Text(text = "Start listening to get recommendations.",
-                                  fontSize = 18.sp,
-                                  maxLines = 3,
-                                  modifier = Modifier.
-                                  width(LocalConfiguration.current.screenWidthDp.dp))
-                          }
-                      }
+                        if(playlists.isNotEmpty()){
+                            items(playlists) { playlist ->
+                                PlaylistItem(playlist, navController, accessToken)
+                            }
+                        }
+                        else{
+                            item {
+                                Text(text = "Start listening to get recommendations.",
+                                    fontSize = 18.sp,
+                                    maxLines = 3,
+                                    modifier = Modifier.
+                                    width(LocalConfiguration.current.screenWidthDp.dp))
+                            }
+                        }
                     }
                 }
             }

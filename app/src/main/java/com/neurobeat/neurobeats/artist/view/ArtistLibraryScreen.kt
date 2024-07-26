@@ -1,9 +1,11 @@
 package com.neurobeat.neurobeats.artist.view
 
+import android.util.Log
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.basicMarquee
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -14,197 +16,170 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import com.neurobeat.neurobeats.R
+import coil.compose.rememberAsyncImagePainter
+import com.neurobeat.neurobeats.artist.viewmodel.ArtistLibraryViewModel
+import com.neurobeat.neurobeats.artist.viewmodel.ArtistViewModel
+import com.neurobeat.neurobeats.music.view.TrackItemView
 import com.neurobeat.neurobeats.ui.theme.BackgroundColor
-import com.neurobeat.neurobeats.ui.theme.txtColor
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun ArtistLibraryScreen(navController: NavHostController) {
-    Column (modifier = Modifier
-        .fillMaxSize()
-        .background(BackgroundColor),
+fun ArtistLibraryScreen(
+    navController: NavHostController,
+    artistLibraryViewModel: ArtistLibraryViewModel,
+    artistViewModel: ArtistViewModel,
+    artistId: String,
+    accessToken: String
+) {
+    LaunchedEffect(artistId, accessToken) {
+        artistLibraryViewModel.fetchArtistTracks(accessToken, artistId)
+        artistViewModel.fetchArtistDetails(accessToken, artistId)
+    }
+
+    val tracks by artistLibraryViewModel.tracks.observeAsState(emptyList())
+    val artist by artistViewModel.artistDetails.observeAsState()
+
+    val genres = artist?.genres?.joinToString(",") { it } ?: "Not Available"
+    val fromArtist = true.toString()
+
+    Column (
+        modifier = Modifier
+            .fillMaxSize()
+            .background(BackgroundColor),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Box(modifier = Modifier
-            .fillMaxWidth()
-            .height(300.dp)
+        LazyColumn(
+            modifier = Modifier.fillMaxSize()
         ) {
-            Image(
-                painter = painterResource(id = R.drawable.perturbator),
-                contentDescription = "Unable to load.",
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize()
-            )
-            Text(
-                text = "Perturbator",
-                color = Color.White,
-                fontSize = 36.sp,
-                modifier = Modifier
+            item {
+                Box(modifier = Modifier
                     .fillMaxWidth()
-                    .align(Alignment.BottomStart)
-                    .background(Color.Black.copy(alpha = 0.5f))
-                    .graphicsLayer {
-                        shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
-                        clip = true
+                    .height(400.dp)
+                ) {
+                    Image(
+                        painter = rememberAsyncImagePainter(model = artist?.images?.first()?.url),
+                        contentDescription = "Playlist image",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                    artist?.name?.let {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .align(Alignment.BottomStart)
+                                .background(Color.Black.copy(alpha = 0.6f))
+                                .padding(horizontal = 20.dp)
+                        ) {
+                            Text(
+                                text = it,
+                                color = Color.White,
+                                fontSize = 34.sp,
+                                fontWeight = FontWeight.Bold,
+                                overflow = TextOverflow.Ellipsis,
+                                modifier = Modifier
+                                    .padding(12.dp, 5.dp)
+                                    .basicMarquee()
+                            )
+                        }
                     }
-                    .padding(horizontal = 20.dp)
-            )
-        }
-        Row (
-            modifier = Modifier
-                .padding(20.dp)
-                .align(Alignment.End),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(text = "764,564 monthly listeners", color = txtColor, fontSize = 15.sp)
-            Spacer(modifier = Modifier.width(30.dp))
-            Box(
-                modifier = Modifier
-                    .size(64.dp)
-                    .clip(CircleShape)
-                    .clickable { }
-                    .border(2.dp, Color.White, CircleShape),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    Icons.Filled.PlayArrow,
-                    contentDescription = null,
-                    modifier = Modifier.size(43.dp),
-                    tint = Color.White
-                )
-            }
-        }
+                }
+                Spacer(modifier = Modifier.height(15.dp))
+                val firstTrack = tracks.firstOrNull()
+                val firstTrackId = firstTrack?.id ?: ""
+                val firstArtistsId = firstTrack?.artists?.joinToString(",") { it.id } ?: ""
 
-        Text(text = "Popular", color = Color.White, fontSize = 30.sp, modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 40.dp))
+                Row (
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(15.dp, 0.dp),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    Column(
+                        modifier = Modifier.width(300.dp)
+                    ) {
+                        artist?.followers?.total?.let {
+                            Text(
+                                text = "Followers: $it",
+                                color = Color(0xFF7D92FF),
+                                fontSize = 16.sp,
+                                modifier = Modifier.padding(15.dp, 0.dp)
+                            )
+                        }
+                        if (genres != "") {
+                            Text(
+                                text = "Genres: $genres",
+                                color = Color(0xFF7D92FF),
+                                fontSize = 16.sp,
+                                modifier = Modifier
+                                    .padding(15.dp, 0.dp)
+                                    .basicMarquee()
+                            )
+                        }
+                    }
+                    Column{
+                        IconButton(
+                            onClick = { navController.navigate("MusicPlayer/$accessToken/$firstTrackId/$firstArtistsId/$fromArtist") },
+                            modifier = Modifier
+                                .size(64.dp)
+                                .clip(CircleShape)
+                                .background(Color.White)
+                                .padding(8.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.PlayArrow,
+                                contentDescription = "Play/Pause",
+                                tint = Color(0xFF030718),
+                                modifier = Modifier.size(48.dp)
+                            )
+                        }
+                    }
+                }
+                Spacer(modifier = Modifier.height(15.dp))
+                Text(
+                    text = "Popular Tracks",
+                    color = Color(0xFF3051FF),
+                    fontSize = 28.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier.padding(15.dp, 0.dp)
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+            }
 
-        Column (
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(30.dp, 20.dp)
-        ) {
-            Row (
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 5.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Image(
-                    painter = painterResource(id = R.drawable.prison_perturbator),
-                    contentDescription = "Prison",
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.size(50.dp)
-                )
-                Spacer(modifier = Modifier.width(10.dp))
-                Column {
-                    Text(text = "BODY/PRISON", color = Color.White, fontSize = 18.sp)
-                    Text(text = "9,87,456", color = Color.LightGray, fontSize = 15.sp)
-                }
-            }
-            Spacer(modifier = Modifier.height(8.dp))
-            Divider(color = Color.Gray)
-            Spacer(modifier = Modifier.height(8.dp))
-            Row (
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 5.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Image(
-                    painter = painterResource(id = R.drawable.prison_perturbator),
-                    contentDescription = "Prison",
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.size(50.dp)
-                )
-                Spacer(modifier = Modifier.width(10.dp))
-                Column {
-                    Text(text = "BODY/PRISON", color = Color.White, fontSize = 18.sp)
-                    Text(text = "9,87,456", color = Color.LightGray, fontSize = 15.sp)
-                }
-            }
-            Spacer(modifier = Modifier.height(8.dp))
-            Divider(color = Color.Gray)
-            Spacer(modifier = Modifier.height(8.dp))
-            Row (
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 5.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Image(
-                    painter = painterResource(id = R.drawable.prison_perturbator),
-                    contentDescription = "Prison",
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.size(50.dp)
-                )
-                Spacer(modifier = Modifier.width(10.dp))
-                Column {
-                    Text(text = "BODY/PRISON", color = Color.White, fontSize = 18.sp)
-                    Text(text = "9,87,456", color = Color.LightGray, fontSize = 15.sp)
-                }
-            }
-            Spacer(modifier = Modifier.height(8.dp))
-            Divider(color = Color.Gray)
-            Spacer(modifier = Modifier.height(8.dp))
-            Row (
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 5.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Image(
-                    painter = painterResource(id = R.drawable.prison_perturbator),
-                    contentDescription = "Prison",
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.size(50.dp)
-                )
-                Spacer(modifier = Modifier.width(10.dp))
-                Column {
-                    Text(text = "BODY/PRISON", color = Color.White, fontSize = 18.sp)
-                    Text(text = "9,87,456", color = Color.LightGray, fontSize = 15.sp)
-                }
-            }
-            Spacer(modifier = Modifier.height(8.dp))
-            Divider(color = Color.Gray)
-            Spacer(modifier = Modifier.height(8.dp))
-            Row (
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 5.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Image(
-                    painter = painterResource(id = R.drawable.prison_perturbator),
-                    contentDescription = "Prison",
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.size(50.dp)
-                )
-                Spacer(modifier = Modifier.width(10.dp))
-                Column {
-                    Text(text = "BODY/PRISON", color = Color.White, fontSize = 18.sp)
-                    Text(text = "9,87,456", color = Color.LightGray, fontSize = 15.sp)
+            items(tracks) { trackItem ->
+                TrackItemView(track = trackItem) {
+                    val artistsIds = trackItem.artists.joinToString(",") { it.id }
+                    val trackId = trackItem.id
+                    Log.d("TrackItem", artistsIds)
+                    Log.d("TrackItem", accessToken)
+                    Log.d("TrackItem", trackId)
+
+                    navController.navigate("MusicPlayer/$accessToken/$trackId/$artistsIds/$fromArtist")
+                    Log.d("TrackItem", trackItem.album.images.first().url)
                 }
             }
         }
     }
 }
+

@@ -23,9 +23,6 @@ data class ImageData(val url: String)
 
 
 //Track api signature
-
-
-
 data class Tracks(
     val items: List<Track>
 )
@@ -33,7 +30,6 @@ data class Tracks(
 data class SpotifySearchResponse(
     val tracks: Tracks
 )
-
 data class TracksResponse(
     val items: List<TrackItem>
 )
@@ -68,4 +64,27 @@ data class Image(
     val width: Int?
 )
 
+// Artist Data class
 
+data class ArtistList(
+    val artists: List<ArtistResponse>
+)
+
+data class ArtistResponse(
+    val id: String,
+    val name: String,
+    val genres: List<String>,
+    val images: List<Image>,
+    val followers: Followers,
+    val popularity: Int
+)
+
+data class Followers(
+    val total: Int
+)
+
+// Top-Track data classes
+
+data class TopTracksResponse(
+    val tracks: List<Track>
+)
