@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -16,7 +15,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -44,7 +42,6 @@ import com.neurobeat.neurobeats.api.models.User
 import com.neurobeat.neurobeats.ui.theme.BackgroundColor
 import com.neurobeat.neurobeats.ui.theme.profileColor
 import com.neurobeat.neurobeats.ui.theme.txtColor
-import kotlin.random.Random
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -107,6 +104,7 @@ fun Profile(navController: NavController){
                 Text(text = "Name",color= txtColor, style = MaterialTheme.typography.bodyLarge)
                 TextField(
                     value = username,
+                    maxLines = 1,
                     onValueChange = { username = it },
                     readOnly = readOnly,
                     colors = TextFieldDefaults.colors(
@@ -127,7 +125,17 @@ fun Profile(navController: NavController){
                 Text(text = "Age",color= txtColor, style = MaterialTheme.typography.bodyLarge)
                 TextField(
                     value = age.toString(),
-                    onValueChange = { age = it.toInt() },
+                    maxLines = 1,
+                    onValueChange =
+                    {
+                        val newAge = it.toIntOrNull()
+                        if (newAge != null) {
+                            age = newAge
+                        }
+                        else{
+                            age=0
+                        }
+                    },
                     readOnly = readOnly,
                     colors = TextFieldDefaults.colors(
                         unfocusedContainerColor = Color.Transparent,
@@ -147,6 +155,7 @@ fun Profile(navController: NavController){
                 Text(text = "Email",color= txtColor, style = MaterialTheme.typography.bodyLarge)
                 TextField(
                     value = email,
+                    maxLines = 1,
                     onValueChange = { email = it },
                     readOnly = true,
                     colors = TextFieldDefaults.colors(

@@ -1,6 +1,5 @@
 package com.neurobeat.neurobeats.authentication
 
-import com.neurobeat.neurobeats.pages.SpotifyApi
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 

@@ -20,6 +20,7 @@ import com.neurobeat.neurobeats.music.view.TracksScreen
 import com.neurobeat.neurobeats.music.viewmodels.PlaylistViewModel
 import com.neurobeat.neurobeats.pages.HomePage
 import com.neurobeat.neurobeats.pages.Profile
+import com.neurobeat.neurobeats.pages.Search
 
 class MainActivity : ComponentActivity() {
     private val viewModel: PlaylistViewModel by viewModels()
@@ -52,8 +53,8 @@ fun AppNavigation(
     val navController = rememberNavController()
 
     NavHost(navController = navController, startDestination = "LoginScreen") {
-        composable("LoginScreen") { LoginScreen(navController)}
-        composable("SignupScreen") { SignupScreen(navController)}
+        composable("LoginScreen") { LoginScreen(navController) }
+        composable("SignupScreen") { SignupScreen(navController) }
         composable("Homepage") { HomePage(navController) }
         composable("ArtistLibrary") { ArtistLibraryScreen(navController) }
         composable("MusicPlayer/{preview_url}/{trackName}/{albumName}/{albumImage}/{artists}/{duration_ms}") { backStackEntry ->
@@ -67,7 +68,7 @@ fun AppNavigation(
                 duration_ms = backStackEntry.arguments?.getString("duration_ms") ?: ""
             )
         }
-        composable("TracksScreen/{playlistId}/{token}/{playlistImage}") {backStackEntry ->
+        composable("TracksScreen/{playlistId}/{token}/{playlistImage}") { backStackEntry ->
             TracksScreen(
                 navController = navController,
                 viewModel = playlistViewModel,
@@ -76,6 +77,7 @@ fun AppNavigation(
                 playlistImage = backStackEntry.arguments?.getString("playlistImage") ?: ""
             )
         }
-        composable("Profile"){Profile(navController)}
+        composable("Profile") { Profile(navController) }
+        composable("Search") { Search(navController) }
     }
 }
