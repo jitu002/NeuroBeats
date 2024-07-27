@@ -57,8 +57,8 @@ fun TracksScreen(
         viewModel.fetchPlaylistTracks(accessToken, playlistId)
     }
 
-    val tracks by viewModel.tracks.observeAsState()
-    val fromArtist = false
+    val tracks by viewModel.tracks.observeAsState(emptyList())
+    val fromArtist = false.toString()
 
     Column (
         modifier = Modifier
@@ -85,10 +85,9 @@ fun TracksScreen(
                 }
                 Spacer(modifier = Modifier.height(8.dp))
 
-                val firstTrack = tracks?.items?.first()
-                println("First track:$firstTrack")
-                val firstTrackId = firstTrack?.id ?: ""
-                val firstArtistsId = firstTrack?.artists?.joinToString(",") { it.id } ?: ""
+                val firstTrack = tracks.firstOrNull()
+                val firstTrackId = firstTrack?.track?.id ?: ""
+                val firstArtistsId = firstTrack?.track?.artists?.joinToString(",") { it.id } ?: ""
 
                 Row (
                     modifier = Modifier.fillMaxWidth().padding(20.dp,0.dp),
@@ -113,17 +112,14 @@ fun TracksScreen(
                 Spacer(modifier = Modifier.height(8.dp))
             }
 
-            tracks?.let {
-                items(it.items) { trackItem ->
-                    TrackItemView(track = trackItem) {
-                        val artistsIds = trackItem.artists.joinToString(",") { it.id }
-                        val trackId = trackItem.id
+            items(tracks) { trackItem ->
+                TrackItemView(track = trackItem.track) {
+                    val artistsIds = trackItem.track.artists.joinToString(",") { it.id }
+                    val trackId = trackItem.track.id
 
-                        navController.navigate("MusicPlayer/$accessToken/$trackId/$artistsIds/$fromArtist")
-                    }
+                    navController.navigate("MusicPlayer/$accessToken/$trackId/$artistsIds/$fromArtist")
                 }
             }
-
         }
     }
 }

@@ -4,7 +4,9 @@ import com.neurobeat.neurobeats.api.models.ArtistList
 import com.neurobeat.neurobeats.api.models.ArtistResponse
 import com.neurobeat.neurobeats.api.models.CategoriesResponse
 import com.neurobeat.neurobeats.api.models.PlaylistResponse
+import com.neurobeat.neurobeats.api.models.SearchResponse
 import com.neurobeat.neurobeats.api.models.TopTracksResponse
+import com.neurobeat.neurobeats.api.models.Track
 import com.neurobeat.neurobeats.api.models.TracksResponse
 import retrofit2.http.GET
 import retrofit2.http.Header
@@ -29,6 +31,13 @@ interface SpotifyApi {
         @Header("Authorization") token: String,
         @Path("playlist_id") playlistId: String
     ): TracksResponse
+
+    @GET("tracks/{track_id}")
+    suspend fun getTrack(
+        @Header("Authorization") token: String,
+        @Path("track_id") trackId: String
+    ): Track
+
     @GET("artists")
     suspend fun getArtists(
         @Header("Authorization") token: String,
@@ -56,7 +65,7 @@ interface SpotifyApi {
         @Query("market") market: String? = null,
         @Query("limit") limit: Int? = null,
         @Query("offset") offset: Int? = null
-    ): TracksResponse
+    ): SearchResponse
 }
 
 

@@ -1,17 +1,12 @@
 package com.neurobeat.neurobeats.api.models
 
-
 //User api signature
 data class User(val usrName:String="",val usrAge:Int=0,val usrEmail:String="")
-
-
-
 
 // Category api signature
 data class CategoriesResponse(val categories: Categories)
 data class Categories(val items: List<Category>)
 data class Category(val id: String, val name: String)
-
 
 
 //Playlist api signature
@@ -21,15 +16,21 @@ data class Playlist(val id: String = "",val name: String = "",val images: List<I
 data class ImageData(val url: String)
 
 
-
-//Track api signature
-
-data class TracksResponse(
-    val tracks: TrackList
+// Search data class
+data class SearchResponse(
+    val tracks: SearchTrackList
+)
+data class SearchTrackList(
+    val items: List<Track>
 )
 
-data class TrackList(
-    val items: List<Track>
+// Tracks Data class
+data class TracksResponse(
+    val items: List<TrackItem>
+)
+
+data class TrackItem(
+    val track: Track
 )
 
 // Track data class

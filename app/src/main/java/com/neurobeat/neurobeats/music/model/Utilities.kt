@@ -33,7 +33,7 @@ import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import com.neurobeat.neurobeats.api.models.Track
-import com.neurobeat.neurobeats.api.models.TrackList
+import com.neurobeat.neurobeats.api.models.TrackItem
 
 @Composable
 fun PlaybackControls(
@@ -134,90 +134,74 @@ fun formatTime(timeMs: Float): String {
 @androidx.annotation.OptIn(UnstableApi::class)
 fun getTrackIndex(
     trackId: String,
-    playlistTracks: TrackList?,
+    playlistTracks: List<TrackItem>,
     artistTracks: List<Track>,
     fromArtist: String
 ): Int {
     Log.d("MusicPlayerScreen", fromArtist)
-    if (playlistTracks != null) {
-        return if (fromArtist == "true") {
-            artistTracks.indexOfFirst { it.id == trackId }.takeIf { it != -1 } ?: 0
-        } else {
-            playlistTracks.items.indexOfFirst { it.id == trackId }.takeIf { it != -1 } ?: 0
-        }
+    return if (fromArtist == "true") {
+        artistTracks.indexOfFirst { it.id == trackId }.takeIf { it != -1 } ?: 0
+    } else {
+        playlistTracks.indexOfFirst { it.track.id == trackId }.takeIf { it != -1 } ?: 0
     }
-    return TODO("Provide the return value")
 }
 
 
 @androidx.annotation.OptIn(UnstableApi::class)
 fun getTrack(
     index: Int,
-    playlistTracks: TrackList?,
+    playlistTracks: List<TrackItem>,
     artistTracks: List<Track>,
     fromArtist: String
 ): Track? {
     Log.d("MusicPlayerScreen", fromArtist)
-    if (playlistTracks != null) {
-        return if (fromArtist == "true") {
-            artistTracks.getOrNull(index)
-        } else {
-            playlistTracks.items.getOrNull(index)
-        }
+    return if (fromArtist == "true") {
+        artistTracks.getOrNull(index)
+    } else {
+        playlistTracks.getOrNull(index)?.track
     }
-    return TODO("Provide the return value")
 }
 
 @androidx.annotation.OptIn(UnstableApi::class)
 fun getNextTrackIndex(
     currentIndex: Int,
-    playlistTracks: TrackList?,
+    playlistTracks: List<TrackItem>,
     artistTracks: List<Track>,
     fromArtist: String
 ): Int {
     Log.d("MusicPlayerScreen", fromArtist)
-    if (playlistTracks != null) {
-        return if (fromArtist == "true") {
-            (currentIndex + 1) % artistTracks.size
-        } else {
-            (currentIndex + 1) % playlistTracks.items.size
-        }
+    return if (fromArtist == "true") {
+        (currentIndex + 1) % artistTracks.size
+    } else {
+        (currentIndex + 1) % playlistTracks.size
     }
-    return TODO("Provide the return value")
 }
 
 @androidx.annotation.OptIn(UnstableApi::class)
 fun getPreviousTrackIndex(
     currentIndex: Int,
-    playlistTracks: TrackList?,
+    playlistTracks: List<TrackItem>,
     artistTracks: List<Track>,
     fromArtist: String
 ): Int {
     Log.d("MusicPlayerScreen", fromArtist)
-    if (playlistTracks != null) {
-        return if (fromArtist == "true") {
-            (currentIndex - 1 + artistTracks.size) % artistTracks.size
-        } else {
-            (currentIndex - 1 + playlistTracks.items.size) % playlistTracks.items.size
-        }
+    return if (fromArtist == "true") {
+        (currentIndex - 1 + artistTracks.size) % artistTracks.size
+    } else {
+        (currentIndex - 1 + playlistTracks.size) % playlistTracks.size
     }
-    return TODO("Provide the return value")
 }
 
 fun getRandomTrackIndex(
     currentIndex: Int,
-    playlistTracks: TrackList?,
+    playlistTracks: List<TrackItem>,
     artistTracks: List<Track>,
     fromArtist: String
-): Any {
-    return if (playlistTracks != null) {
-        return if (fromArtist == "true") {
-            artistTracks.indices.filter { it != currentIndex }.random()
-        } else {
-            // playlistTracks.items.filter { it != currentIndex }.random()
-        }
+): Int {
+    return if (fromArtist == "true") {
+        artistTracks.indices.filter { it != currentIndex }.random()
     } else {
-
+        playlistTracks.indices.filter { it != currentIndex }.random()
     }
 }
 
