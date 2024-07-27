@@ -77,7 +77,7 @@ fun MusicPlayerScreen(
 ) {
     val decodedDuration = 29000f
     val context = LocalContext.current
-    val playlistTracks by playlistViewModel.tracks.observeAsState(emptyList())
+    val playlistTracks by playlistViewModel.tracks.observeAsState()
     val artistTracks by artistLibraryViewModel.tracks.observeAsState(emptyList())
 
     var currentTrackIndex by remember { mutableIntStateOf(getTrackIndex(trackId, playlistTracks, artistTracks, fromArtist)) }
@@ -107,9 +107,9 @@ fun MusicPlayerScreen(
         val listener = object : Player.Listener {
             override fun onPlaybackStateChanged(state: Int) {
                 if (state == Player.STATE_ENDED) {
-                    currentTrackIndex = if (isShuffling) {
+                    currentTrackIndex = if (isShuffling) ({
                         getRandomTrackIndex(currentTrackIndex, playlistTracks, artistTracks, fromArtist)
-                    } else {
+                    }) as Int else {
                         getNextTrackIndex(currentTrackIndex, playlistTracks, artistTracks, fromArtist)
                     }
                     currentPosition = updatePlayer(player, getTrack(

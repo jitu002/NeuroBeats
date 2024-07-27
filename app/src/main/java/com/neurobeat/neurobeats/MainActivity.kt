@@ -22,6 +22,7 @@ import com.neurobeat.neurobeats.music.view.TracksScreen
 import com.neurobeat.neurobeats.music.viewmodels.PlaylistViewModel
 import com.neurobeat.neurobeats.pages.view.HomePage
 import com.neurobeat.neurobeats.pages.view.Profile
+import com.neurobeat.neurobeats.pages.view.Search
 import com.neurobeat.neurobeats.ui.theme.NeuroBeatsTheme
 
 class MainActivity : ComponentActivity() {
@@ -95,5 +96,6 @@ fun AppNavigation(
             )
         }
         composable("Profile"){ Profile(navController) }
+        composable("Search"){Search(navController)}
     }
 }

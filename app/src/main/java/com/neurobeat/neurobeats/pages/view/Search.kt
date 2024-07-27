@@ -28,6 +28,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -52,17 +53,15 @@ import java.nio.charset.StandardCharsets
 @Composable
 fun Search(navController: NavController) {
 
-    val bottomScrollBehavior = BottomAppBarDefaults.exitAlwaysScrollBehavior()
-
     val categories = listOf("Pop", "Hindi", "Ghazals", "Indie", "Devotional", "Party", "Love", "Trending")
     val genreColor=listOf(
         Color(0xFF00FFFF),
         Color(0xFFFF69B4),
         Color(0xFF32CD32),
         Color(0xFFFFFF00),
-        Color(0xFF8A2BE2),
+        Color(0xFFBD82F3),
         Color(0xFFFFA500),
-        Color(0xFFFF00FF),
+        Color(0xFFF75CF7),
         Color(0xFF40E0D0),
         Color(0xFFFF7F50),
         Color(0xFF7FFF00)
@@ -71,7 +70,7 @@ fun Search(navController: NavController) {
 
 
     val searchViewModel: SearchViewModel = viewModel()
-    val searchResults by searchViewModel.searchResults.collectAsState()
+    val searchResults by searchViewModel.searchResults.observeAsState()
 
     val coroutineScope = rememberCoroutineScope()
     val categoriesViewModel: CategoriesViewModel = viewModel()
@@ -80,6 +79,8 @@ fun Search(navController: NavController) {
 
     var query by remember { mutableStateOf("") }
     var token by remember { mutableStateOf<String?>(null) }
+
+    val fromArtist = false
 
     fun getGenreColor(genre: String): Color {
 
@@ -154,20 +155,14 @@ fun Search(navController: NavController) {
 
         if (query.isNotEmpty()) {
             LazyColumn {
-                items(searchResults) { trackItem ->
-                    TrackItemView(track = trackItem) {
-                        val previewUrl = trackItem.preview_url ?: return@TrackItemView
-                        val encodedPreviewUrl = URLEncoder.encode(previewUrl, StandardCharsets.UTF_8.toString())
-                        val encodedTrackName = URLEncoder.encode(trackItem.name, StandardCharsets.UTF_8.toString())
-                        val encodedAlbumName = URLEncoder.encode(trackItem.album.name, StandardCharsets.UTF_8.toString())
-                        val albumImageUrl = trackItem.album.images.first().url
-                        val encodedAlbumImageUrl = URLEncoder.encode(albumImageUrl, StandardCharsets.UTF_8.toString())
-                        val artists = trackItem.artists.joinToString(", ") { it.name }
-                        val encodedArtists = URLEncoder.encode(artists, StandardCharsets.UTF_8.toString())
-                        val duration = trackItem.duration_ms.toString()
-                        val encodedDuration = URLEncoder.encode(duration, StandardCharsets.UTF_8.toString())
+                searchResults?.let {
+                    items(it.items) { trackItem ->
+                        TrackItemView(track = trackItem) {
+                            val artistsIds = trackItem.artists.joinToString(",") { it.id }
+                            val trackId = trackItem.id
 
-                        navController.navigate("MusicPlayer/$encodedPreviewUrl/$encodedTrackName/$encodedAlbumName/$encodedAlbumImageUrl/$encodedArtists/$encodedDuration")
+                            navController.navigate("MusicPlayer/$token/$trackId/$artistsIds/$fromArtist")
+                        }
                     }
                 }
             }
@@ -216,7 +211,6 @@ fun Search(navController: NavController) {
                     verticalArrangement = Arrangement.Center,
                     modifier = Modifier.fillMaxSize()
                 ) {
-                    Text("Curating some finness!!!")
                     CircularProgressIndicator(
                         modifier = Modifier.width(64.dp),
                         color = Color.White,

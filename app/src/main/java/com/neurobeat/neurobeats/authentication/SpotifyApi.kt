@@ -4,7 +4,6 @@ import com.neurobeat.neurobeats.api.models.ArtistList
 import com.neurobeat.neurobeats.api.models.ArtistResponse
 import com.neurobeat.neurobeats.api.models.CategoriesResponse
 import com.neurobeat.neurobeats.api.models.PlaylistResponse
-import com.neurobeat.neurobeats.api.models.SpotifySearchResponse
 import com.neurobeat.neurobeats.api.models.TopTracksResponse
 import com.neurobeat.neurobeats.api.models.TracksResponse
 import retrofit2.http.GET
@@ -57,7 +56,7 @@ interface SpotifyApi {
         @Query("market") market: String? = null,
         @Query("limit") limit: Int? = null,
         @Query("offset") offset: Int? = null
-    ): SpotifySearchResponse
+    ): TracksResponse
 }
 
 

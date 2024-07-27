@@ -1,8 +1,10 @@
 package com.neurobeat.neurobeats.pages.viewmodel
 
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.neurobeat.neurobeats.api.models.Track
+import com.neurobeat.neurobeats.api.models.TrackList
 import com.neurobeat.neurobeats.authentication.RetrofitInstance
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -11,9 +13,8 @@ import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 
 class SearchViewModel : ViewModel() {
-
-    private val _searchResults = MutableStateFlow<List<Track>>(emptyList())
-    val searchResults: StateFlow<List<Track>> = _searchResults
+    private val _searchResults = MutableLiveData<TrackList>()
+    val searchResults: LiveData<TrackList> get() = _searchResults
 
     fun search(query: String, accessToken: String) {
         val encodedQuery = URLEncoder.encode(query, StandardCharsets.UTF_8.toString())
@@ -24,10 +25,10 @@ class SearchViewModel : ViewModel() {
                     query = encodedQuery,
                     type = "track"
                 )
-                println("Response: $response")
 
-                _searchResults.value = response.tracks.items
-                println("Search output: ${_searchResults.value}")
+                _searchResults.postValue(response.tracks)
+                println("Search results:${response.tracks}")
+
             } catch (e: Exception) {
                 println("Error fetching search data: ${e.message}")
             }

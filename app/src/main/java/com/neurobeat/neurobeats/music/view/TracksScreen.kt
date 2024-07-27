@@ -57,7 +57,7 @@ fun TracksScreen(
         viewModel.fetchPlaylistTracks(accessToken, playlistId)
     }
 
-    val tracks by viewModel.tracks.observeAsState(emptyList())
+    val tracks by viewModel.tracks.observeAsState()
     val fromArtist = false
 
     Column (
@@ -85,16 +85,17 @@ fun TracksScreen(
                 }
                 Spacer(modifier = Modifier.height(8.dp))
 
-                val firstTrack = tracks.firstOrNull()
-                val firstTrackId = firstTrack?.track?.id ?: ""
-                val firstArtistsId = firstTrack?.track?.artists?.joinToString(",") { it.id } ?: ""
+                val firstTrack = tracks?.items?.first()
+                println("First track:$firstTrack")
+                val firstTrackId = firstTrack?.id ?: ""
+                val firstArtistsId = firstTrack?.artists?.joinToString(",") { it.id } ?: ""
 
                 Row (
                     modifier = Modifier.fillMaxWidth().padding(20.dp,0.dp),
                     horizontalArrangement = Arrangement.End
                 ) {
                     IconButton(
-                        onClick = { navController.navigate("MusicPlayer/$accessToken/$firstTrackId/$firstArtistsId/$fromArtist") },
+                        onClick = { navController.navigate("MusicPlayer/$accessToken/$firstTrackId/$firstArtistsId/$fromArtist") } ,
                         modifier = Modifier
                             .size(64.dp)
                             .clip(CircleShape)
@@ -112,14 +113,17 @@ fun TracksScreen(
                 Spacer(modifier = Modifier.height(8.dp))
             }
 
-            items(tracks) { trackItem ->
-                TrackItemView(track = trackItem.track) {
-                    val artistsIds = trackItem.track.artists.joinToString(",") { it.id }
-                    val trackId = trackItem.track.id
+            tracks?.let {
+                items(it.items) { trackItem ->
+                    TrackItemView(track = trackItem) {
+                        val artistsIds = trackItem.artists.joinToString(",") { it.id }
+                        val trackId = trackItem.id
 
-                    navController.navigate("MusicPlayer/$accessToken/$trackId/$artistsIds/$fromArtist")
+                        navController.navigate("MusicPlayer/$accessToken/$trackId/$artistsIds/$fromArtist")
+                    }
                 }
             }
+
         }
     }
 }
