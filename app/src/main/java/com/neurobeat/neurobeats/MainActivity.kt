@@ -74,7 +74,7 @@ fun AppNavigation(
                 accessToken = backStackEntry.arguments?.getString("token") ?: ""
             )
         }
-        composable("MusicPlayer/{token}/{trackId}/{artistsIds}/{fromArtist}") { backStackEntry ->
+        composable("MusicPlayer/{token}/{trackId}/{albumId}/{artistsIds}/{fromArtist}") { backStackEntry ->
             MusicPlayerScreen(
                 navController = navController,
                 viewModel = allArtistViewModel,
@@ -82,6 +82,7 @@ fun AppNavigation(
                 artistLibraryViewModel = artistLibraryViewModel,
                 accessToken = backStackEntry.arguments?.getString("token") ?: "",
                 trackId = backStackEntry.arguments?.getString("trackId") ?: "",
+                albumId = backStackEntry.arguments?.getString("albumId") ?: "",
                 artistIds = backStackEntry.arguments?.getString("artistsIds") ?: "",
                 fromArtist = backStackEntry.arguments?.getString("fromArtist") ?: ""
             )

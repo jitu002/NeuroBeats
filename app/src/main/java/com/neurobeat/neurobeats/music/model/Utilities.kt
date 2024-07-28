@@ -29,7 +29,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.MediaItem
-import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import com.neurobeat.neurobeats.api.models.Track
@@ -136,13 +135,13 @@ fun getTrackIndex(
     trackId: String,
     playlistTracks: List<TrackItem>,
     artistTracks: List<Track>,
+    albumTracks: List<Track>,
     fromArtist: String
 ): Int {
-    Log.d("MusicPlayerScreen", fromArtist)
-    return if (fromArtist == "true") {
-        artistTracks.indexOfFirst { it.id == trackId }.takeIf { it != -1 } ?: 0
-    } else {
-        playlistTracks.indexOfFirst { it.track.id == trackId }.takeIf { it != -1 } ?: 0
+    return when(fromArtist) {
+        "true" -> artistTracks.indexOfFirst { it.id == trackId }.takeIf { it != -1 } ?: 0
+        "search" -> albumTracks.indexOfFirst { it.id == trackId}.takeIf { it != -1 } ?: 0
+        else -> playlistTracks.indexOfFirst { it.track.id == trackId }.takeIf { it != -1 } ?: 0
     }
 }
 
@@ -152,13 +151,13 @@ fun getTrack(
     index: Int,
     playlistTracks: List<TrackItem>,
     artistTracks: List<Track>,
+    albumTracks: List<Track>,
     fromArtist: String
 ): Track? {
-    Log.d("MusicPlayerScreen", fromArtist)
-    return if (fromArtist == "true") {
-        artistTracks.getOrNull(index)
-    } else {
-        playlistTracks.getOrNull(index)?.track
+    return when(fromArtist) {
+        "true" -> artistTracks.getOrNull(index)
+        "search" -> albumTracks.getOrNull(index)
+        else -> playlistTracks.getOrNull(index)?.track
     }
 }
 
@@ -167,13 +166,13 @@ fun getNextTrackIndex(
     currentIndex: Int,
     playlistTracks: List<TrackItem>,
     artistTracks: List<Track>,
+    albumTracks: List<Track>,
     fromArtist: String
 ): Int {
-    Log.d("MusicPlayerScreen", fromArtist)
-    return if (fromArtist == "true") {
-        (currentIndex + 1) % artistTracks.size
-    } else {
-        (currentIndex + 1) % playlistTracks.size
+    return when(fromArtist) {
+        "true" -> (currentIndex + 1) % artistTracks.size
+        "search" -> (currentIndex + 1) % albumTracks.size
+        else -> (currentIndex + 1) % playlistTracks.size
     }
 }
 
@@ -182,13 +181,13 @@ fun getPreviousTrackIndex(
     currentIndex: Int,
     playlistTracks: List<TrackItem>,
     artistTracks: List<Track>,
+    albumTracks: List<Track>,
     fromArtist: String
 ): Int {
-    Log.d("MusicPlayerScreen", fromArtist)
-    return if (fromArtist == "true") {
-        (currentIndex - 1 + artistTracks.size) % artistTracks.size
-    } else {
-        (currentIndex - 1 + playlistTracks.size) % playlistTracks.size
+    return when(fromArtist) {
+        "true" -> (currentIndex - 1 + artistTracks.size) % artistTracks.size
+        "search" -> (currentIndex - 1 + albumTracks.size) % albumTracks.size
+        else -> (currentIndex - 1 + playlistTracks.size) % playlistTracks.size
     }
 }
 
@@ -196,12 +195,13 @@ fun getRandomTrackIndex(
     currentIndex: Int,
     playlistTracks: List<TrackItem>,
     artistTracks: List<Track>,
+    albumTracks: List<Track>,
     fromArtist: String
 ): Int {
-    return if (fromArtist == "true") {
-        artistTracks.indices.filter { it != currentIndex }.random()
-    } else {
-        playlistTracks.indices.filter { it != currentIndex }.random()
+    return when(fromArtist) {
+        "true" -> artistTracks.indices.filter { it != currentIndex }.random()
+        "search" -> albumTracks.indices.filter { it != currentIndex }.random()
+        else -> playlistTracks.indices.filter { it != currentIndex }.random()
     }
 }
 

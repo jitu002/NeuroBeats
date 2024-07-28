@@ -84,7 +84,7 @@ fun Search(navController: NavController) {
     var query by remember { mutableStateOf("") }
     var token by remember { mutableStateOf<String?>(null) }
 
-    val fromArtist = "false"
+    val fromArtist = "search"
 
     fun getGenreColor(genre: String): Color {
 
@@ -160,12 +160,13 @@ fun Search(navController: NavController) {
         if (query.isNotEmpty()) {
             LazyColumn {
                 searchResults?.let {
-                    items(it.items) { trackItem ->
+                    items(it.items.filter { item ->  item.preview_url != null }) { trackItem ->
                         TrackItemView(track = trackItem) {
                             val artistsIds = trackItem.artists.joinToString(",") { artist -> artist.id }
                             val trackId = trackItem.id
+                            val albumId = trackItem.album.id
 
-                            navController.navigate("MusicPlayer/$token/$trackId/$artistsIds/$fromArtist")
+                            navController.navigate("MusicPlayer/$token/$trackId/$albumId/$artistsIds/$fromArtist")
                         }
                     }
                 }

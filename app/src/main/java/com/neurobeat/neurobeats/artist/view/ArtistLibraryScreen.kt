@@ -63,6 +63,7 @@ fun ArtistLibraryScreen(
 
     val genres = artist?.genres?.joinToString(",") { it } ?: "Not Available"
     val fromArtist = true.toString()
+    val albumId = "dummy"
 
     Column (
         modifier = Modifier
@@ -140,7 +141,7 @@ fun ArtistLibraryScreen(
                     }
                     Column{
                         IconButton(
-                            onClick = { navController.navigate("MusicPlayer/$accessToken/$firstTrackId/$firstArtistsId/$fromArtist") },
+                            onClick = { navController.navigate("MusicPlayer/$accessToken/$firstTrackId/$albumId/$firstArtistsId/$fromArtist") },
                             modifier = Modifier
                                 .size(64.dp)
                                 .clip(CircleShape)
@@ -175,7 +176,7 @@ fun ArtistLibraryScreen(
                     Log.d("TrackItem", accessToken)
                     Log.d("TrackItem", trackId)
 
-                    navController.navigate("MusicPlayer/$accessToken/$trackId/$artistsIds/$fromArtist")
+                    navController.navigate("MusicPlayer/$accessToken/$trackId/$albumId/$artistsIds/$fromArtist")
                     Log.d("TrackItem", trackItem.album.images.first().url)
                 }
             }

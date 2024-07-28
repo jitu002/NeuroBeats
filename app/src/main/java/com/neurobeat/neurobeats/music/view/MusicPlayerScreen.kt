@@ -45,6 +45,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
+import com.neurobeat.neurobeats.R
 import com.neurobeat.neurobeats.artist.view.ArtistsDialog
 import com.neurobeat.neurobeats.artist.viewmodel.AllArtistsViewModel
 import com.neurobeat.neurobeats.artist.viewmodel.ArtistLibraryViewModel
@@ -71,22 +72,32 @@ fun MusicPlayerScreen(
     playlistViewModel: PlaylistViewModel,
     accessToken: String,
     trackId: String,
+    albumId: String,
     artistIds: String,
     artistLibraryViewModel: ArtistLibraryViewModel,
-    fromArtist: String
+    fromArtist: String,
 ) {
     val decodedDuration = 29000f
     val context = LocalContext.current
+
+    LaunchedEffect(accessToken,albumId) {
+        if (fromArtist == "search") {
+            playlistViewModel.fetchAlbumTracks(accessToken, albumId)
+        }
+    }
+
     val playlistTracks by playlistViewModel.tracks.observeAsState(emptyList())
     val artistTracks by artistLibraryViewModel.tracks.observeAsState(emptyList())
+    val albumTracks by playlistViewModel.albumTracks.observeAsState(emptyList())
+    val album by playlistViewModel.album.observeAsState()
 
-    var currentTrackIndex by remember { mutableIntStateOf(getTrackIndex(trackId, playlistTracks, artistTracks, fromArtist)) }
-    val track = getTrack(currentTrackIndex, playlistTracks, artistTracks, fromArtist)
+    var currentTrackIndex by remember { mutableIntStateOf(getTrackIndex(trackId, playlistTracks, artistTracks, albumTracks, fromArtist)) }
+    val track = getTrack(currentTrackIndex, playlistTracks, artistTracks, albumTracks, fromArtist)
 
     val previewUrl = track?.preview_url ?: ""
     val artists = track?.artists?.joinToString(", ") { it.name } ?: ""
-    val albumName = track?.album?.name ?: ""
-    val albumImage = track?.album?.images?.firstOrNull()?.url ?: ""
+    val albumName = track?.album?.name ?: album?.name
+    val albumImage = track?.album?.images?.first()?.url ?: album?.images?.first()?.url ?: R.drawable.apple_music_note
     val trackName = track?.name ?: ""
 
     val player = remember {
@@ -108,14 +119,15 @@ fun MusicPlayerScreen(
             override fun onPlaybackStateChanged(state: Int) {
                 if (state == Player.STATE_ENDED) {
                     currentTrackIndex = if (isShuffling) {
-                        getRandomTrackIndex(currentTrackIndex, playlistTracks, artistTracks, fromArtist)
+                        getRandomTrackIndex(currentTrackIndex, playlistTracks, artistTracks, albumTracks, fromArtist)
                     } else {
-                        getNextTrackIndex(currentTrackIndex, playlistTracks, artistTracks, fromArtist)
+                        getNextTrackIndex(currentTrackIndex, playlistTracks, artistTracks, albumTracks, fromArtist)
                     }
                     currentPosition = updatePlayer(player, getTrack(
                         currentTrackIndex,
                         playlistTracks,
                         artistTracks,
+                        albumTracks,
                         fromArtist
                     )?.preview_url)
                     isPlaying = true
@@ -159,7 +171,9 @@ fun MusicPlayerScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(text = "Playing from the album", color = txtColor, fontSize = 16.sp)
-                Text(text = albumName, color = txtColor, fontSize = 14.sp, modifier = Modifier.basicMarquee())
+                if (albumName != null) {
+                    Text(text = albumName, color = txtColor, fontSize = 14.sp, modifier = Modifier.basicMarquee())
+                }
             }
             Icon(imageVector = Icons.Default.MoreVert, contentDescription = "More Options", modifier = Modifier.size(35.dp), tint = txtColor)
         }
@@ -229,12 +243,14 @@ fun MusicPlayerScreen(
                         currentTrackIndex,
                         playlistTracks,
                         artistTracks,
+                        albumTracks,
                         fromArtist
                     )
                     currentPosition = updatePlayer(player, getTrack(
                         currentTrackIndex,
                         playlistTracks,
                         artistTracks,
+                        albumTracks,
                         fromArtist
                     )?.preview_url)
                     isPlaying = true
@@ -242,11 +258,12 @@ fun MusicPlayerScreen(
                     isShuffling = false
                 },
                 onPreviousClicked = {
-                    currentTrackIndex = getPreviousTrackIndex(currentTrackIndex, playlistTracks, artistTracks, fromArtist)
+                    currentTrackIndex = getPreviousTrackIndex(currentTrackIndex, playlistTracks, artistTracks, albumTracks, fromArtist)
                     currentPosition = updatePlayer(player, getTrack(
                         currentTrackIndex,
                         playlistTracks,
                         artistTracks,
+                        albumTracks,
                         fromArtist
                     )?.preview_url)
                     isPlaying = true

@@ -59,6 +59,7 @@ fun TracksScreen(
 
     val tracks by viewModel.tracks.observeAsState(emptyList())
     val fromArtist = false.toString()
+    val albumId = "dummy"
 
     Column (
         modifier = Modifier
@@ -94,7 +95,7 @@ fun TracksScreen(
                     horizontalArrangement = Arrangement.End
                 ) {
                     IconButton(
-                        onClick = { navController.navigate("MusicPlayer/$accessToken/$firstTrackId/$firstArtistsId/$fromArtist") } ,
+                        onClick = { navController.navigate("MusicPlayer/$accessToken/$firstTrackId/$albumId/$firstArtistsId/$fromArtist") } ,
                         modifier = Modifier
                             .size(64.dp)
                             .clip(CircleShape)
@@ -117,7 +118,7 @@ fun TracksScreen(
                     val artistsIds = trackItem.track.artists.joinToString(",") { it.id }
                     val trackId = trackItem.track.id
 
-                    navController.navigate("MusicPlayer/$accessToken/$trackId/$artistsIds/$fromArtist")
+                    navController.navigate("MusicPlayer/$accessToken/$trackId/$albumId/$artistsIds/$fromArtist")
                 }
             }
         }

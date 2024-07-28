@@ -87,3 +87,16 @@ data class Followers(
 data class TopTracksResponse(
     val tracks: List<Track>
 )
+
+// Album response data class
+
+data class AlbumResponse(
+    val id: String,
+    val images: List<Image>,
+    val name: String,
+    val tracks: AlbumTrackItem
+)
+
+data class AlbumTrackItem(
+    val items: List<Track>
+)
