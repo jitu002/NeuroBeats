@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -73,9 +74,13 @@ fun TracksScreen(
             modifier = Modifier.fillMaxSize()
         ) {
             item {
+                val firstTrack = tracks.firstOrNull()
+                val firstTrackId = firstTrack?.track?.id ?: ""
+                val firstArtistsId = firstTrack?.track?.artists?.joinToString(",") { it.id } ?: ""
                 Box(modifier = Modifier
                     .fillMaxWidth()
-                    .height(400.dp)
+                    .height(400.dp),
+                    contentAlignment = Alignment.BottomCenter
                 ) {
                     Image(
                         painter = rememberAsyncImagePainter(model = decodedAlbumImage),
@@ -83,34 +88,29 @@ fun TracksScreen(
                         contentScale = ContentScale.Fit,
                         modifier = Modifier.fillMaxSize()
                     )
-                }
-                Spacer(modifier = Modifier.height(8.dp))
-
-                val firstTrack = tracks.firstOrNull()
-                val firstTrackId = firstTrack?.track?.id ?: ""
-                val firstArtistsId = firstTrack?.track?.artists?.joinToString(",") { it.id } ?: ""
-
-                Row (
-                    modifier = Modifier.fillMaxWidth().padding(20.dp,0.dp),
-                    horizontalArrangement = Arrangement.End
-                ) {
-                    IconButton(
-                        onClick = { navController.navigate("MusicPlayer/$accessToken/$firstTrackId/$albumId/$firstArtistsId/$fromArtist") } ,
-                        modifier = Modifier
-                            .size(64.dp)
-                            .clip(CircleShape)
-                            .background(Color.White)
-                            .padding(8.dp)
+                    Row (
+                        modifier = Modifier.fillMaxWidth().padding(20.dp,0.dp),
+                        horizontalArrangement = Arrangement.End
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.PlayArrow,
-                            contentDescription = "Play/Pause",
-                            tint = Color(0xFF030718),
-                            modifier = Modifier.size(48.dp)
-                        )
+                        IconButton(
+                            onClick = { navController.navigate("MusicPlayer/$accessToken/$firstTrackId/$albumId/$firstArtistsId/$fromArtist") } ,
+                            modifier = Modifier
+                                .offset(y = 28.dp)
+                                .size(70.dp)
+                                .clip(CircleShape)
+                                .background(Color.White)
+                                .padding(8.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.PlayArrow,
+                                contentDescription = "Play/Pause",
+                                tint = Color(0xFF030718),
+                                modifier = Modifier.size(48.dp)
+                            )
+                        }
                     }
                 }
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(26.dp))
             }
 
             items(tracks) { trackItem ->

@@ -5,7 +5,6 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -13,6 +12,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -79,6 +79,10 @@ fun ArtistLibraryScreen(
                     .fillMaxWidth()
                     .height(400.dp)
                 ) {
+                    val firstTrack = tracks.firstOrNull()
+                    val firstTrackId = firstTrack?.id ?: ""
+                    val firstArtistsId = firstTrack?.artists?.joinToString(",") { it.id } ?: ""
+
                     Image(
                         painter = rememberAsyncImagePainter(model = artist?.images?.first()?.url),
                         contentDescription = "Playlist image",
@@ -86,12 +90,12 @@ fun ArtistLibraryScreen(
                         modifier = Modifier.fillMaxSize()
                     )
                     artist?.name?.let {
-                        Box(
+                        Row(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .align(Alignment.BottomStart)
                                 .background(Color.Black.copy(alpha = 0.6f))
-                                .padding(horizontal = 20.dp)
+                                .padding(horizontal = 12.dp)
                         ) {
                             Text(
                                 text = it,
@@ -100,61 +104,52 @@ fun ArtistLibraryScreen(
                                 fontWeight = FontWeight.Bold,
                                 overflow = TextOverflow.Ellipsis,
                                 modifier = Modifier
-                                    .padding(12.dp, 5.dp)
-                                    .basicMarquee()
+                                    .padding(12.dp)
+                                    .width(270.dp)
+                                    .basicMarquee(Int.MAX_VALUE)
                             )
+                            IconButton(
+                                onClick = { navController.navigate("MusicPlayer/$accessToken/$firstTrackId/$albumId/$firstArtistsId/$fromArtist") },
+                                modifier = Modifier
+                                    .size(70.dp)
+                                    .offset(y = 28.dp)
+                                    .clip(CircleShape)
+                                    .background(Color.White)
+                                    .padding(8.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.PlayArrow,
+                                    contentDescription = "Play/Pause",
+                                    tint = Color(0xFF030718),
+                                    modifier = Modifier.size(48.dp)
+                                )
+                            }
                         }
                     }
                 }
-                Spacer(modifier = Modifier.height(15.dp))
-                val firstTrack = tracks.firstOrNull()
-                val firstTrackId = firstTrack?.id ?: ""
-                val firstArtistsId = firstTrack?.artists?.joinToString(",") { it.id } ?: ""
+                Spacer(modifier = Modifier.height(26.dp))
 
-                Row (
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(15.dp, 0.dp),
-                    horizontalArrangement = Arrangement.End
-                ) {
-                    Column(
-                        modifier = Modifier.width(300.dp)
-                    ) {
-                        artist?.followers?.total?.let {
-                            Text(
-                                text = "Followers: $it",
-                                color = Color(0xFF7D92FF),
-                                fontSize = 16.sp,
-                                modifier = Modifier.padding(15.dp, 0.dp)
-                            )
-                        }
-                        if (genres != "") {
-                            Text(
-                                text = "Genres: $genres",
-                                color = Color(0xFF7D92FF),
-                                fontSize = 16.sp,
-                                modifier = Modifier
-                                    .padding(15.dp, 0.dp)
-                                    .basicMarquee()
-                            )
-                        }
-                    }
-                    Column{
-                        IconButton(
-                            onClick = { navController.navigate("MusicPlayer/$accessToken/$firstTrackId/$albumId/$firstArtistsId/$fromArtist") },
+                artist?.followers?.total?.let {
+                    Text(
+                        text = "Followers: $it",
+                        color = Color(0xFF7D92FF),
+                        fontSize = 16.sp,
+                        modifier = Modifier.padding(15.dp, 0.dp)
+                    )
+                }
+                if (genres != "") {
+                    Row (modifier = Modifier.padding(15.dp, 0.dp)) {
+                        Text(text = "Genres: ",
+                            color = Color(0xFF7D92FF),
+                            fontSize = 16.sp
+                        )
+                        Text(
+                            text = genres,
+                            color = Color(0xFF7D92FF),
+                            fontSize = 16.sp,
                             modifier = Modifier
-                                .size(64.dp)
-                                .clip(CircleShape)
-                                .background(Color.White)
-                                .padding(8.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.PlayArrow,
-                                contentDescription = "Play/Pause",
-                                tint = Color(0xFF030718),
-                                modifier = Modifier.size(48.dp)
-                            )
-                        }
+                                .basicMarquee(Int.MAX_VALUE)
+                        )
                     }
                 }
                 Spacer(modifier = Modifier.height(15.dp))
