@@ -20,7 +20,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.ThumbUp
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -31,10 +34,12 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -45,6 +50,9 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import com.neurobeat.neurobeats.DatabaseOperation
 import com.neurobeat.neurobeats.R
 import com.neurobeat.neurobeats.artist.view.ArtistsDialog
 import com.neurobeat.neurobeats.artist.viewmodel.AllArtistsViewModel
@@ -62,6 +70,7 @@ import com.neurobeat.neurobeats.music.viewmodels.PlaylistViewModel
 import com.neurobeat.neurobeats.ui.theme.BackgroundColor
 import com.neurobeat.neurobeats.ui.theme.txtColor
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @androidx.annotation.OptIn(UnstableApi::class)
 @OptIn(ExperimentalFoundationApi::class)
@@ -86,6 +95,8 @@ fun MusicPlayerScreen(
         }
     }
 
+    val dbOps=DatabaseOperation()
+
     val playlistTracks by playlistViewModel.tracks.observeAsState(emptyList())
     val artistTracks by artistLibraryViewModel.tracks.observeAsState(emptyList())
     val albumTracks by playlistViewModel.albumTracks.observeAsState(emptyList())
@@ -99,6 +110,13 @@ fun MusicPlayerScreen(
     val albumName = track?.album?.name ?: album?.name
     val albumImage = track?.album?.images?.first()?.url ?: album?.images?.first()?.url ?: R.drawable.apple_music_note
     val trackName = track?.name ?: ""
+
+    var isClicked by remember { mutableStateOf(false) }
+
+
+    val snackbarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
+
 
     val player = remember {
         ExoPlayer.Builder(context).build().apply {
@@ -190,6 +208,24 @@ fun MusicPlayerScreen(
         Column(
             modifier = Modifier.padding(horizontal = 30.dp)
         ) {
+            IconButton(
+                onClick = {
+                    isClicked=!isClicked
+                    if(isClicked){
+                        dbOps.addFavouriteMusic(trackId, FirebaseAuth.getInstance(), FirebaseFirestore.getInstance())
+                        coroutineScope.launch {
+                            snackbarHostState.showSnackbar("Track added to favorites")
+                        }
+                    }
+                    else{
+                        dbOps.removeTrackFromFavorites(trackId,FirebaseAuth.getInstance(), FirebaseFirestore.getInstance())
+                        coroutineScope.launch {
+                            snackbarHostState.showSnackbar("Track removed from favorites")
+                        }
+                    }
+            }) {
+                Icon(imageVector = Icons.Default.ThumbUp, contentDescription = "Like",tint=if(isClicked) Color.Red else txtColor)
+            }
             Text(text = trackName, color = txtColor, modifier = Modifier
                 .fillMaxWidth()
                 .basicMarquee())

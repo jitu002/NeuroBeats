@@ -11,6 +11,8 @@ import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 
 class SearchViewModel : ViewModel() {
+
+
     private val _searchResults = MutableLiveData<SearchTrackList>()
     val searchResults: LiveData<SearchTrackList> get() = _searchResults
 

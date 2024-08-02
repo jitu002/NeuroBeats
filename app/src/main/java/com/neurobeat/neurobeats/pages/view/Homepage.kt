@@ -23,6 +23,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.LibraryMusic
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.BottomAppBar
@@ -120,6 +121,14 @@ fun HomePage(navController: NavController) {
                 dboperation.fetchDataFromFirebase(FirebaseAuth.getInstance(), FirebaseFirestore.getInstance()){user->
                     username = user?.usrName?.split(" ")?.getOrNull(0) ?: "Guest"
                     profileTxt=username.first().uppercaseChar().toString()
+                }
+                SpotifyAuth.getAccessToken { token ->
+                    accessToken = token
+                    token?.let {
+                        coroutineScope.launch {
+                            accessToken?.let { it1 -> categoriesViewModel.category(it1) }
+                        }
+                    }
                 }
             }
         }
@@ -228,6 +237,9 @@ fun HomePage(navController: NavController) {
                         IconButton(onClick = { navController.navigate("Search") }) {
                             Icon(imageVector = Icons.Default.Search, contentDescription = "Search icon")
                         }
+                        IconButton(onClick = { navController.navigate("Library/$accessToken") }){
+                            Icon(imageVector = Icons.Default.LibraryMusic, contentDescription = "Library music")
+                        }
                     }
                 }
             }
@@ -240,16 +252,6 @@ fun HomePage(navController: NavController) {
                 verticalArrangement = Arrangement.Top,
 
                 ) {
-                LaunchedEffect(Unit) {
-                    SpotifyAuth.getAccessToken { token ->
-                        accessToken = token
-                        token?.let {
-                            coroutineScope.launch {
-                                accessToken?.let { it1 -> categoriesViewModel.category(it1) }
-                            }
-                        }
-                    }
-                }
 
                 categoryPlaylistsMap?.let {
                     CategoryPlaylistsList(it, navController, accessToken)
@@ -259,7 +261,7 @@ fun HomePage(navController: NavController) {
                         verticalArrangement = Arrangement.Center,
                         modifier = Modifier.fillMaxSize()
                     ) {
-                        Text("Hang On!!!")
+                        Text("Hang On!!!", color = txtColor)
                         CircularProgressIndicator(
                             modifier = Modifier.width(64.dp),
                             color = Color.White,
@@ -293,7 +295,8 @@ fun CategoryPlaylistsList(
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
                         fontSize = 26.sp,
-                        modifier = Modifier.padding(16.dp)
+                        modifier = Modifier.padding(16.dp),
+                        color = txtColor
                     )
                     LazyRow(
                         contentPadding = PaddingValues(start = 16.dp, end = 16.dp),
@@ -346,7 +349,8 @@ fun PlaylistItem(playlist: Playlist, navController: NavController, accessToken: 
                 fontSize = 14.sp,
                 overflow = TextOverflow.Ellipsis, // Use Ellipsis to indicate text overflow
                 maxLines = 2,
-                modifier = Modifier.width(150.dp)
+                modifier = Modifier.width(150.dp),
+                color = txtColor
             )
         }
     }

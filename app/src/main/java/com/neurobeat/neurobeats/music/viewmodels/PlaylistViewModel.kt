@@ -26,7 +26,6 @@ class PlaylistViewModel : ViewModel() {
             try {
                 val response = RetrofitInstance.api.getPlaylistTracks("Bearer $token", playlistId)
                 _tracks.postValue(response.items.filter { it.track.preview_url != null })
-                // Log.d("PlaylistViewModel",response.toString())
             } catch (e: Exception) {
                 Log.e("PlaylistViewModel", "Error fetching playlist tracks", e)
             }
