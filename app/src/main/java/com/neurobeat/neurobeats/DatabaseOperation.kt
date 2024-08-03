@@ -164,6 +164,7 @@ class DatabaseOperation {
                         if (likedMusic != null) {
                             onResult(likedMusic)
                             println("Tracks successfully fetched")
+                            Log.d("FavTracks", likedMusic.toString())
                         } else {
                             println("LikedMusic is not a valid list of strings")
                             onResult(null)

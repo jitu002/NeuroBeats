@@ -2,43 +2,37 @@ package com.neurobeat.neurobeats.pages.view
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.LibraryMusic
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.BottomAppBarDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -56,7 +50,6 @@ import com.neurobeat.neurobeats.pages.viewmodel.LibraryViewModel
 import com.neurobeat.neurobeats.ui.theme.BackgroundColor
 import com.neurobeat.neurobeats.ui.theme.BarColor
 import com.neurobeat.neurobeats.ui.theme.txtColor
-import kotlinx.coroutines.launch
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -67,38 +60,30 @@ fun Library(navController: NavController, accessToken: String){
     val bottomScrollBehavior= BottomAppBarDefaults.exitAlwaysScrollBehavior()
 
     val dbOps=DatabaseOperation()
-    val coroutineScope= rememberCoroutineScope()
-    val libraryViewModel:LibraryViewModel = viewModel()
-
-    val favTracks = remember { mutableStateListOf<Track>() }
-
-    val tracks by libraryViewModel.favTrack.observeAsState()
-
-    val fromArtist = false.toString()
-    val albumId = "dummy"
+    val libraryViewModel: LibraryViewModel = viewModel()
+    val fromArtist = "search"
 
     LaunchedEffect(Unit) {
+        dbOps.fetchTracksFromFavorites(
+            FirebaseAuth.getInstance(),
+            FirebaseFirestore.getInstance()
+        ) { likedTracks ->
+            if (likedTracks != null) {
 
-        dbOps.fetchTracksFromFavorites(FirebaseAuth.getInstance(), FirebaseFirestore.getInstance()) { tracks ->
-            if (tracks != null) {
-
-                tracks.forEach { trackId ->
-                    println("Library token:$accessToken")
-                    println("Track:$trackId")
-                    libraryViewModel.getTracks(accessToken,trackId)
-                    println("Step 2 exec:$tracks")
+                likedTracks.forEach { trackId ->
+//                    println("Library token:$accessToken")
+//                    println("Track:$trackId")
+                    libraryViewModel.getTrack(accessToken, trackId)
+//                    println("Step 2 exec:$tracks")
                 }
             } else {
                 println("Failed to fetch favorite tracks")
             }
         }
     }
-    LaunchedEffect(tracks) {
-        tracks?.let { newTracks ->
-            favTracks.addAll(listOf(newTracks))
-            println("Library screen fav:$favTracks")
-        }
-    }
+    val tracks by libraryViewModel.favTracks.collectAsState()
+    println("tracks: $tracks")
+
     Scaffold(
         modifier = Modifier
             .nestedScroll(topScrollBehavior.nestedScrollConnection)
@@ -112,7 +97,7 @@ fun Library(navController: NavController, accessToken: String){
                 ),
                 title = {
                     Text(
-                        "Library",
+                        "Favorites",
                         maxLines = 3,
                         fontSize =27.sp,
                         overflow = TextOverflow.Ellipsis
@@ -155,10 +140,11 @@ fun Library(navController: NavController, accessToken: String){
         ) {
             //ui GOES here
 
-            items(favTracks) { trackItem ->
+            items(tracks.distinct()) { trackItem ->
                 TrackItemView(track = trackItem) {
                     val artistsIds = trackItem.artists.joinToString(",") { it.id }
                     val trackId = trackItem.id
+                    val albumId = trackItem.album.id
 
                     navController.navigate("MusicPlayer/$accessToken/$trackId/$albumId/$artistsIds/$fromArtist")
                 }

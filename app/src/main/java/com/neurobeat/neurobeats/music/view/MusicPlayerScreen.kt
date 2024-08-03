@@ -1,6 +1,7 @@
 package com.neurobeat.neurobeats.music.view
 
 import android.net.Uri
+import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -19,6 +20,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronLeft
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.ThumbUp
 import androidx.compose.material3.Icon
@@ -119,12 +121,14 @@ fun MusicPlayerScreen(
 
 
     val player = remember {
-        ExoPlayer.Builder(context).build().apply {
-            val mediaItem = MediaItem.fromUri(Uri.parse(previewUrl))
-            setMediaItem(mediaItem)
-            prepare()
-            play()
-        }
+        ExoPlayer.Builder(context).build()
+    }
+
+    LaunchedEffect(previewUrl) {
+        val mediaItem = MediaItem.fromUri(Uri.parse(previewUrl))
+        player.setMediaItem(mediaItem)
+        player.prepare()
+        player.play()
     }
 
     var isPlaying by remember { mutableStateOf(true) }
@@ -154,6 +158,7 @@ fun MusicPlayerScreen(
         }
         player.addListener(listener)
         onDispose {
+            player.removeListener(listener)
             player.release()
         }
     }
@@ -188,7 +193,7 @@ fun MusicPlayerScreen(
                 modifier = Modifier.width(280.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(text = "Playing from the album", color = txtColor, fontSize = 16.sp)
+                Text(text = "Playing from", color = txtColor, fontSize = 16.sp)
                 if (albumName != null) {
                     Text(text = albumName, color = txtColor, fontSize = 14.sp, modifier = Modifier.basicMarquee())
                 }
@@ -204,7 +209,7 @@ fun MusicPlayerScreen(
                 .size(320.dp)
                 .clip(RoundedCornerShape(20.dp))
         )
-        Spacer(modifier = Modifier.height(100.dp))
+        Spacer(modifier = Modifier.height(90.dp))
         Column(
             modifier = Modifier.padding(horizontal = 30.dp)
         ) {
@@ -224,7 +229,7 @@ fun MusicPlayerScreen(
                         }
                     }
             }) {
-                Icon(imageVector = Icons.Default.ThumbUp, contentDescription = "Like",tint=if(isClicked) Color.Red else txtColor)
+                Icon(imageVector = Icons.Default.Favorite, contentDescription = "Like",tint=if(isClicked) Color.Red else txtColor)
             }
             Text(text = trackName, color = txtColor, modifier = Modifier
                 .fillMaxWidth()
