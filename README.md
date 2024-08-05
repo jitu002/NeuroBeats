@@ -15,6 +15,8 @@ Status: Completed
 Sprint 2:
 Designing individual pages (music player page, etc) and connecting them to the main system </br>
 Status: Completed
+
+
 ![screen3](https://github.com/user-attachments/assets/b6ad977d-7072-4f28-8663-7d18cf5a8870)
 </br>
 </br>
@@ -36,6 +38,8 @@ Status: Completed
 Sprint 3:
 Designing profile page with edit feature
 Status:Completed
+
+
 ![screen13](https://github.com/user-attachments/assets/bb0c6dc0-3350-45f8-b249-0636ceae2c90)
 </br>
 </br>
@@ -46,6 +50,8 @@ Status:Completed
 
 Sprint 4:Artist section addition , search feature , fav music 
 Status:Completed
+
+
 ![screen6](https://github.com/user-attachments/assets/29c67f03-f9fa-475c-a84d-66b39deeade5)
 </br>
 </br>
