@@ -8,10 +8,6 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -19,7 +15,6 @@ import com.neurobeat.neurobeats.artist.view.ArtistLibraryScreen
 import com.neurobeat.neurobeats.artist.viewmodel.AllArtistsViewModel
 import com.neurobeat.neurobeats.artist.viewmodel.ArtistLibraryViewModel
 import com.neurobeat.neurobeats.artist.viewmodel.ArtistViewModel
-import com.neurobeat.neurobeats.authentication.SpotifyAuth
 import com.neurobeat.neurobeats.authentication.view.LoginScreen
 import com.neurobeat.neurobeats.authentication.view.SignupScreen
 import com.neurobeat.neurobeats.music.view.MusicPlayerScreen
@@ -30,7 +25,6 @@ import com.neurobeat.neurobeats.pages.view.Library
 import com.neurobeat.neurobeats.pages.view.Profile
 import com.neurobeat.neurobeats.pages.view.Search
 import com.neurobeat.neurobeats.ui.theme.NeuroBeatsTheme
-import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
 

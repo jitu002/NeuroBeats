@@ -8,7 +8,6 @@ import com.neurobeat.neurobeats.api.models.PlaylistResponse
 import com.neurobeat.neurobeats.api.models.SearchResponse
 import com.neurobeat.neurobeats.api.models.TopTracksResponse
 import com.neurobeat.neurobeats.api.models.Track
-import com.neurobeat.neurobeats.api.models.TrackItem
 import com.neurobeat.neurobeats.api.models.TracksResponse
 import retrofit2.http.GET
 import retrofit2.http.Header

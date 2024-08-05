@@ -127,13 +127,7 @@ fun Profile(navController: NavController){
                     maxLines = 1,
                     onValueChange =
                     {
-                        val newAge = it.toIntOrNull()
-                        if (newAge != null) {
-                            age = newAge
-                        }
-                        else{
-                            age=0
-                        }
+                        age = it.toIntOrNull() ?: 0
                     },
                     readOnly = readOnly,
                     colors = TextFieldDefaults.colors(
