@@ -7,12 +7,20 @@ import com.neurobeat.neurobeats.api.models.Track
 import com.neurobeat.neurobeats.authentication.RetrofitInstance
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class LibraryViewModel: ViewModel() {
 
     private val _favTracks = MutableStateFlow<List<Track>>(emptyList())
     val favTracks: StateFlow<List<Track>> get() = _favTracks
+
+    private val _refreshTrigger = MutableStateFlow(0)
+    val refreshTrigger: StateFlow<Int> = _refreshTrigger.asStateFlow()
+
+    fun triggerRefresh() {
+        _refreshTrigger.value += 1
+    }
 
     fun getTrack(accessToken:String,trackId:String) {
         viewModelScope.launch {
@@ -27,6 +35,10 @@ class LibraryViewModel: ViewModel() {
                 Log.e("LibraryViewModel", "Error fetching artist details", e)
             }
         }
+    }
+
+    fun clearTracks() {
+        _favTracks.value = emptyList()
     }
 
 
