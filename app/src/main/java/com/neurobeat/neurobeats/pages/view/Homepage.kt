@@ -212,7 +212,8 @@ fun HomePage(navController: NavController) {
                             }) {
                             Icon(
                                 imageVector = Icons.Filled.Menu,
-                                contentDescription = "Menu Icon"
+                                contentDescription = "Menu Icon",
+                                tint = txtColor
                             )
                         }
                     },
@@ -315,6 +316,7 @@ fun CategoryPlaylistsList(
                                 Text(text = "Start listening to get recommendations.",
                                     fontSize = 18.sp,
                                     maxLines = 3,
+                                    color = txtColor,
                                     modifier = Modifier.
                                     width(LocalConfiguration.current.screenWidthDp.dp))
                             }
